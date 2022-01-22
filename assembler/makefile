@@ -1,5 +1,5 @@
-assembler: assembler.o filefunc.o otherfunc.o
-	gcc -g -ansi -Wall -ansi -pedantic assembler.o filefunc.o otherfunc.o -o assembler
+assembler: assembler.o filefunc.o otherfunc.o linkedlist.o
+	gcc -g -ansi -Wall -ansi -pedantic assembler.o filefunc.o otherfunc.o linkedlist.o -o assembler
 
 assembler.o: assembler.c assembler.h
 	gcc -c -Wall -ansi -pedantic assembler.c -o assembler.o
@@ -9,3 +9,6 @@ filefunc.o: filefunc.c assembler.h
 
 otherfunc.o: otherfunc.c assembler.h
 	gcc -c -Wall -ansi -pedantic otherfunc.c -o otherfunc.o
+
+linkedlist.o: linkedlist.c assembler.h
+	gcc -c -Wall -ansi -pedantic linkedlist.c -o linkedlist.o
