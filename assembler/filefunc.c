@@ -49,21 +49,33 @@ void duplicate_file(char * filename)
 void check_macro()
 {
     const char *start_of_macro_pattern = "macro";
-    const char *end_of_macro_pattern = "mend";
+    /*const char *end_of_macro_pattern = "mend";*/
     char line[MAX_LENGTH + 1];
-    char *target = NULL;
+    /*char *target = NULL;*/
     char *start = NULL;
-    char *end = NULL;
-    char *found_macro;
+    /*char *end = NULL;
+    char *found_macro; */
 
     int line_number;
+
+    /*fgets(line, MAX_LENGTH+1,post_macro_f);
+    start = strstr(line,start_of_macro_pattern);
+    if (start)
+    {
+        start = strstr(line, start_of_macro_pattern);
+        printf("%s\n", start);
+        return;
+    }
+    printf("%s\n here\n", start);
+    return;*/
 
     for (line_number = 0; fgets(line, MAX_LENGTH + 1, post_macro_f); line_number++)
     {
         if (start == NULL)
-        {
             start = strstr(line, start_of_macro_pattern);
-            printf("%s\n", start);
+        else
+        {   
+            printf("%s", start);
             continue;
         }
         /*found_macro = line[strlen(start)];
@@ -88,5 +100,4 @@ void check_macro()
             printf("%s\n", target);
         free(target);
     }*/
-    return;
 }
