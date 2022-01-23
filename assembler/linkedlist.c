@@ -1,66 +1,48 @@
 #include "assembler.h"
+#include "linkedlist.h"
 
-typedef struct string_node * pointer;
-typedef struct string_node {
-    char * string;
-    pointer next;
-} string_node;
-
-/*
- * This functions adds a node to the list.
- */
-void add_to_list(pointer *, char *);
-
-/*
- * This function frees the nodes of the list from the memory.
- */
-void free_list(pointer *);
-
-/*
- * This functions prints the nodes of a given list.
- */
-void print_list(pointer);
-
-void print_list(pointer ptr)
+linked_list * create_empty_list()
 {
-    while(ptr)
-    {
-        printf("%s\n", ptr->string);
-        ptr = ptr->next;
-    }
+    linked_list * new_head;
+    new_head = (linked_list *)malloc(sizeof(linked_list));
+    new_head->head = NULL;
+
+    return new_head;
 }
 
-void free_list(pointer * ptr)
+node * add_to_list(linked_list * list, void * data)
 {
-    pointer p;
+    node * new_node;
+    node * temp;
 
-    while (*ptr)
+    new_node = (node *)malloc(sizeof(node));
+    new_node->data = malloc(sizeof(char *));
+    new_node->data = (char *)data;
+    new_node->next = NULL;
+
+    if (list->head == NULL)
     {
-        p = *ptr;
-        *ptr = (*ptr)->next;
-        free(p);
+        list->head = new_node;
     }
+    else
+    {
+        temp = list->head;
+        while (temp->next != NULL)
+        {
+            temp = temp->next;
+        }
+        temp->next = new_node;
+    }
+    return (list->head);
 }
 
-void add_to_list(pointer * ptr, char * str)
+void print_list(linked_list * list)
 {
-    pointer p, new_node;
-
-    new_node = (pointer) malloc(sizeof(string_node));
-    if (!new_node)
+    node * temp;
+    temp = list->head;
+    while (temp != NULL)
     {
-        printf("Cannot build list\n");
-        exit(0);
+        printf("%s", (char *)(temp->data));
+        temp = temp->next;
     }
-
-    new_node->string = str;
-
-    p = *ptr;
-
-    while (p->next != NULL)
-    {
-        p = p->next;
-    }
-    p->next = new_node;
-    free(p);
 }

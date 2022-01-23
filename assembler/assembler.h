@@ -1,10 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define STARTING_ADDRESS 100
-#define LAST_ADRESS 8191 /* Final adress of our RAM */
-#define MAX_LENGTH 81 /* max amount of characters in a single line in the files, including '\n' character */
+#include <ctype.h>
 
 typedef struct opcode_word {
     unsigned int opcode : 16;
@@ -71,3 +68,9 @@ void duplicate_file(char * filename);
  * input[] : the string where it shall skip the white space at the start
  */
 char *skip_white_space_at_start(char input[]);
+
+/*
+ * This function takes a string and removes all white spaces from the entire string, leaving only regular characters
+ * input[] : the string where all white space will be deleted
+ */
+void delete_spaces(char input[]);

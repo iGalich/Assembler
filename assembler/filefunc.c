@@ -1,4 +1,6 @@
 #include "assembler.h"
+#include "linkedlist.h"
+#include "const.h"
 
 FILE *original_f; /* original .as file */
 FILE *post_macro_f; /* post macro file with the file extension .am */
@@ -49,55 +51,39 @@ void duplicate_file(char * filename)
 void check_macro()
 {
     const char *start_of_macro_pattern = "macro";
-    /*const char *end_of_macro_pattern = "mend";*/
+    const char *end_of_macro_pattern = "mend";
     char line[MAX_LENGTH + 1];
-    /*char *target = NULL;*/
-    char *start = NULL;
-    /*char *end = NULL;
-    char *found_macro; */
+    char *found_macro;
+    char *temp;
 
-    int line_number;
+    linked_list * line_list;
 
-    /*fgets(line, MAX_LENGTH+1,post_macro_f);
-    start = strstr(line,start_of_macro_pattern);
-    if (start)
-    {
-        start = strstr(line, start_of_macro_pattern);
-        printf("%s\n", start);
-        return;
-    }
-    printf("%s\n here\n", start);
-    return;*/
+    line_list = create_empty_list();
 
-    for (line_number = 0; fgets(line, MAX_LENGTH + 1, post_macro_f); line_number++)
-    {
-        if (start == NULL)
-            start = strstr(line, start_of_macro_pattern);
-        else
-        {   
-            printf("%s", start);
-            continue;
-        }
-        /*found_macro = line[strlen(start)];
-        printf("%s", found_macro);*/
-    }
+    temp = (char *)malloc(MAX_LENGTH * sizeof(char));
 
-/*
     while (fgets(line, MAX_LENGTH + 1, post_macro_f))
     {
-        if (start == NULL)
-            start = strstr(line, start_of_macro_pattern);
-        if (start != NULL)
+        if (strstr(line, start_of_macro_pattern) != NULL)
         {
-            start += strlen(start_of_macro_pattern);
-            if (end == NULL)
-                end = strstr(start, end_of_macro_pattern);
-            target = (char *) malloc(end - start + 1);
-            memcpy(target, start, end - start);
-            target[end - start] = '\0';
+            found_macro = line + strlen(start_of_macro_pattern); /* A macro has been found in the line, so we remove the macro keyword */
+
+            found_macro = skip_white_space_at_start(found_macro);
+
+            /* We loop and look for the keyword indicating the end of the macro. As stated in the instructions, we assume it exists. */
+            while (fgets(line, MAX_LENGTH + 1, post_macro_f))
+            {
+                /* Each line that does not contain the keyword indicating the end of the macro, we add to a linked list */
+                if (strstr(line, end_of_macro_pattern) == NULL)
+                {
+                    temp = (char *)malloc(MAX_LENGTH * sizeof(char));
+                    strcpy(temp, line);
+                    line_list->head = add_to_list(line_list, temp);
+                }
+            }
+            print_list(line_list);
+            free(temp);
+            break;
         }
-        if (target)
-            printf("%s\n", target);
-        free(target);
-    }*/
+    }
 }
