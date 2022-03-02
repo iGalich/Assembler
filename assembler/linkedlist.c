@@ -1,5 +1,4 @@
 #include "assembler.h"
-#include "linkedlist.h"
 
 linked_list * create_empty_list()
 {
@@ -40,7 +39,8 @@ void print_list(linked_list * list)
 {
     node * temp;
     temp = list->head;
-    while (temp != NULL)
+    /* We check that the next node is different from null because we don't want to print the end of the macro "endm" */
+    while (temp != NULL && temp->next != NULL)
     {
         printf("%s", (char *)(temp->data));
         temp = temp->next;

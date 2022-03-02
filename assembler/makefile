@@ -19,10 +19,8 @@ utility.o: utility.c $(HEADERS)
 linkedlist.o: linkedlist.c $(HEADERS)
 	gcc -c -Wall -ansi -pedantic linkedlist.c -o linkedlist.o
 
-clean:
-	rm *.o
-
 remove:
+	rm *.o
 	rm *.am
 	rm *.ent
 	rm *.ext

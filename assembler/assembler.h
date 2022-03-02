@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "linkedlist.h"
 
 typedef struct opcode_word {
     unsigned int opcode : 16;
@@ -74,3 +75,16 @@ char *skip_white_space_at_start(char input[]);
  * input[] : the string where all white space will be deleted
  */
 void delete_spaces(char input[]);
+
+/*
+ * This function is used after a macro keyword has been found. It goes over the .am file and replaces every appearance of the found keyword to the proper macro.
+ * *list : a list containing the macro which will be put in the .am file
+ * line_number : the number of the line which contains the macro keyword
+ */
+void replace_macro(linked_list * list, int line_number);
+
+/*
+ * This function looks for instances of the  macro keyword in the file text.
+ * *list : a list containing the macro which will be put in the .am file
+ */
+void find_macro_instances(linked_list * list);
