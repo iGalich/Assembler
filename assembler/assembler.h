@@ -81,10 +81,14 @@ void delete_spaces(char input[]);
  * *list : a list containing the macro which will be put in the .am file
  * delete_line : the number of the line which contains the macro keyword
  */
-void replace_macro(linked_list * list, int delete_line);
+void replace_macro(linked_list * list, int delete_line, int last_line);
 
 /*
  * This function looks for instances of the  macro keyword in the file text.
  * *list : a list containing the macro which will be put in the .am file
  */
 void find_macro_instances(linked_list * list);
+
+void create_copy(int line_number);
+
+int count_number_of_lines_in_file(FILE * file);
