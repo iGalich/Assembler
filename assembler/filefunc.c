@@ -23,7 +23,7 @@ void look_for_file(char * filename)
         fprintf(stderr, "cannot open file\n");
         exit(0);
     }
-    
+
     filename_length = strlen(filename);
     filename[filename_length - extension_length] = '\0'; /* remove the file extension */
 
@@ -33,9 +33,7 @@ void look_for_file(char * filename)
 
 void duplicate_file(char * filename)
 {
-    char ch;
-    int filename_length = 0;
-    const int extension_length = 3;
+    int ch;
 
     strcat(filename, ".am"); /* adds the file extension .am to the file name */
 
@@ -50,19 +48,15 @@ void duplicate_file(char * filename)
 
     rewind(original_f);
     rewind(post_macro_f);
-
-    filename_length = strlen(filename);
-    filename[filename_length - extension_length] = '\0'; /* remove the file extension */
 }
 
 void check_macro()
 {
     const char *start_of_macro_pattern = "macro";
-    const char *end_of_macro_pattern = "mend";
+    const char *end_of_macro_pattern = "endm";
     char line[MAX_LENGTH + 1];
     char *found_macro;
     char *temp;
-    fpos_t checkpoint;
 
     linked_list * line_list;
 
@@ -79,7 +73,7 @@ void check_macro()
 
             found_macro = skip_white_space_at_start(found_macro);
 
-            found_macro[strlen(found_macro) - 1] = '\0';
+            /*found_macro[strlen(found_macro) - 1] = '\0';*/
 
             strcpy(macro_keyword, found_macro);
 
@@ -96,12 +90,9 @@ void check_macro()
                 else
                     break;
             }
-
-            fgetpos(original_f, &checkpoint); /* saves the current position, so we can come back to it later and continute checking for more macros */
+            rewind(post_macro_f);
 
             find_macro_instances(line_list);
-
-            fsetpos(original_f, &checkpoint); /* returns to the saved position */
 
             free(temp);
         }
@@ -110,77 +101,103 @@ void check_macro()
 
 void find_macro_instances(linked_list * list)
 {
-    char line[MAX_LENGTH + 1];
+    char * line;
     int line_number = 0;
     int macro_def_flag = 0; /* a flag used to indicate if we've passed the first instance of macro appearance */
 
-    rewind(post_macro_f);
+    line = (char *)malloc(MAX_LENGTH * sizeof(char));
 
+    /* Go over each line in the file */
     while (fgets(line, MAX_LENGTH + 1, post_macro_f))
     {
-        line_number++;
+        printf("%s\n", line);
         
+        line_number++;
+
         if (strstr(line, macro_keyword) != NULL)
         {
             if (macro_def_flag == 1)
             {
-                replace_macro(list, line_number);
+                rewind(post_macro_f);
+                replace_macro(list, line_number); /* we pass the number of the line which contains the appearance of the macro keyword so we can replace it with the defined macro */
+                line_number += get_number_of_nodes(list); /* We move the line number because we have changed the text and added new lines to the file */
+                macro_def_flag = 0;
+                rewind(post_macro_f);
+                break;
             }
             else
             {
-                macro_def_flag = 1;
+                macro_def_flag = 1; /* first instance of the macro appearance has been found, which defines the macro itself */
             }
-        }
-
+        }    
     }
 }
 
-/* FOR FUTURE ME: clean this function, add functinallity of adding the new lines */
-void replace_macro(linked_list * list, int line_number)
+void replace_macro(linked_list * list, int delete_line)
 {
-    int c, last, lineno;
+    int ch, last, line_number;
+    int result_check = 0; /* used to check if the functions fputs was successful */
+    node * temp;
 
     last = '\n';
-    lineno = 0;
+    line_number = 0;
+    temp = list->head;
 
     strcat(global_filename, ".am");
 
-    rewind(post_macro_f);
+    printf("in function\n");
 
-    while ((c = getc(post_macro_f)) != EOF)
+    while ((ch = getc(post_macro_f)) != EOF)
     {
         if (last == '\n')
-            lineno++;
+            line_number++;
 
-        last = c;
+        last = ch;
     }
 
     rewind(post_macro_f);
 
-    if (!(copy_f = fopen("copy.c", "w")))
+    if (!(copy_f = fopen("copy.am", "w+")))
     {
         fprintf(stderr, "cannot create copy.c\n");
         exit(0);
     }
 
-    lineno = 1;
-
-    while ((c = getc(post_macro_f)) != EOF)
+    line_number = 1;
+    
+    while ((ch = getc(post_macro_f)) != EOF)
     {
-        if (lineno != line_number)
-            putc(c, copy_f);
-        
-        if (c == '\n')
-            lineno++;
+        /* We copy the contents of the file, but skip over the line which contains the macro keyword */
+        if (line_number != delete_line)
+            fputc(ch, copy_f);
+        else
+        {
+            while(temp != NULL)
+            {
+                if ((result_check = fputs(temp->data, copy_f)) == EOF)
+                {
+                    fprintf(stderr, "write error to copy.am");
+                    exit(0);
+                }
+                temp = temp->next;
+            }
+            line_number += get_number_of_nodes(list) - 1;
+        }
+             
+        if (ch == '\n')
+            line_number++;
     }
 
-    if (fclose(copy_f))
+
+    /* We overwrite the .am file with the new edited file */
+    if ((rename("copy.am", global_filename)) == EOF)
     {
-        perror("write error to copy.c");
+        fprintf(stderr, "error renaming file");
         exit(0);
     }
 
-    rename("copy.c", global_filename);
-
     global_filename[strlen(global_filename) - 3] = '\0';
+
+    fclose(copy_f);
+    rewind(post_macro_f);
 }

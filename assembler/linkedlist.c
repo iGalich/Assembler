@@ -35,6 +35,7 @@ node * add_to_list(linked_list * list, void * data)
     return (list->head);
 }
 
+/* NOTE: this function is unused in the code, and is only present for test functions */
 void print_list(linked_list * list)
 {
     node * temp;
@@ -45,4 +46,25 @@ void print_list(linked_list * list)
         printf("%s", (char *)(temp->data));
         temp = temp->next;
     }
+}
+
+void print_node(node * node_name)
+{
+    printf("%s", (char *)(node_name->data));
+}
+
+int get_number_of_nodes(linked_list * list)
+{
+    node * temp;
+    int count = 0;
+
+    temp = list->head;
+
+    while (temp != NULL)
+    {
+        temp = temp->next;
+        count++;
+    }
+
+    return count;
 }

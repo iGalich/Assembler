@@ -79,9 +79,9 @@ void delete_spaces(char input[]);
 /*
  * This function is used after a macro keyword has been found. It goes over the .am file and replaces every appearance of the found keyword to the proper macro.
  * *list : a list containing the macro which will be put in the .am file
- * line_number : the number of the line which contains the macro keyword
+ * delete_line : the number of the line which contains the macro keyword
  */
-void replace_macro(linked_list * list, int line_number);
+void replace_macro(linked_list * list, int delete_line);
 
 /*
  * This function looks for instances of the  macro keyword in the file text.
