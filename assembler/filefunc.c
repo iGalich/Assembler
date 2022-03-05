@@ -8,6 +8,8 @@ FILE *copy_f;
 char * macro_keyword;
 char * global_filename;
 
+int end_of_file_flag = 0;
+
 void look_for_file(char * filename)
 {
     int filename_length = 0;
@@ -58,6 +60,9 @@ void check_macro()
     char *found_macro;
     char *temp;
 
+    int encountered_macro_instances_counter = 0;
+    int total_macro_instances_counter = 0;
+
     linked_list * line_list;
 
     line_list = create_empty_list();
@@ -67,8 +72,18 @@ void check_macro()
 
     while (fgets(line, MAX_LENGTH + 1, original_f))
     {
+        printf("%s", line);
         if (strstr(line, start_of_macro_pattern) != NULL)
         {
+            printf("enter\n");
+            if (encountered_macro_instances_counter < total_macro_instances_counter)
+            {
+                encountered_macro_instances_counter++;
+                continue;
+            }
+
+            total_macro_instances_counter++;
+
             found_macro = line + strlen(start_of_macro_pattern); /* A macro has been found in the line, so we remove the macro keyword */
 
             found_macro = skip_white_space_at_start(found_macro);
@@ -94,7 +109,11 @@ void check_macro()
 
             find_macro_instances(line_list);
 
+            free(macro_keyword);
             free(temp);
+
+            encountered_macro_instances_counter = 0;
+            rewind(original_f);
         }
     }
 }
@@ -146,10 +165,23 @@ void find_macro_instances(linked_list * list)
         }    
     }
     rewind(post_macro_f);
-    replace_macro(list, count_number_of_lines_in_file(post_macro_f) + 1, count_number_of_lines_in_file(post_macro_f) - 1 - num_of_macros_instances + num_of_macros_instances * get_number_of_nodes(list));
+
+    if (!end_of_file_flag)
+        replace_macro(list, count_number_of_lines_in_file(post_macro_f) + 1, count_number_of_lines_in_file(post_macro_f) - 1 - num_of_macros_instances + num_of_macros_instances * get_number_of_nodes(list));
+    
+    /* We overwrite the .am file with the new edited file */
+    strcat(global_filename, ".am");
+    if ((rename("copy.am", global_filename)) == EOF)
+    {
+        fprintf(stderr, "error renaming file");
+        exit(0);
+    }
+
+    printf("done replacing\n");
+
+    global_filename[strlen(global_filename) - 3] = '\0';
 }
 
-/* FIX THE CUrrent bug present, just check tommorow */
 int count_number_of_lines_in_file(FILE * file)
 {
     int count = 0;
@@ -228,13 +260,8 @@ void replace_macro(linked_list * list, int delete_line, int last_line)
             line_number++;
     }
 
-
-    /* We overwrite the .am file with the new edited file 
-    if ((rename("copy.am", global_filename)) == EOF)
-    {
-        fprintf(stderr, "error renaming file");
-        exit(0);
-    }*/
+    if (feof(post_macro_f))
+            end_of_file_flag = 1;
 
     global_filename[strlen(global_filename) - 3] = '\0';
 
