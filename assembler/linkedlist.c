@@ -9,14 +9,31 @@ linked_list * create_empty_list()
     return new_head;
 }
 
-node * add_to_list(linked_list * list, void * data)
+node * add_to_list(linked_list * list, char * new_name, char **new_text)
 {
+    int i, j;
+
     node * new_node;
     node * temp;
 
     new_node = (node *)malloc(sizeof(node));
-    new_node->data = malloc(sizeof(char *));
-    new_node->data = (char *)data;
+
+    new_node->name = (char *)malloc(81 * sizeof(char));
+
+    new_node->name = new_name;
+
+    new_node->text = (char **)calloc(6, sizeof(char *));
+    for (i = 0; i < 6; i++)
+        new_node->text[i] = (char *)calloc(81, sizeof(char));
+
+    for (i = 0; i < sizeof(new_text) / sizeof(new_text[0]); i++)
+    {
+        for (j = 0; j < sizeof(new_text[0]) / sizeof(new_text)[0][0]; j++)
+        {
+            new_node->text[i][j] = new_text[i][j];
+        }
+    }
+
     new_node->next = NULL;
 
     if (list->head == NULL)
@@ -33,24 +50,6 @@ node * add_to_list(linked_list * list, void * data)
         temp->next = new_node;
     }
     return (list->head);
-}
-
-/* NOTE: this function is unused in the code, and is only present for test functions */
-void print_list(linked_list * list)
-{
-    node * temp;
-    temp = list->head;
-    /* We check that the next node is different from null because we don't want to print the end of the macro "endm" */
-    while (temp != NULL && temp->next != NULL)
-    {
-        printf("%s", (char *)(temp->data));
-        temp = temp->next;
-    }
-}
-
-void print_node(node * node_name)
-{
-    printf("%s", (char *)(node_name->data));
 }
 
 int get_number_of_nodes(linked_list * list)

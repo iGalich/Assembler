@@ -92,3 +92,7 @@ void find_macro_instances(linked_list * list);
 void create_copy(int line_number);
 
 int count_number_of_lines_in_file(FILE * file);
+
+void first_pass(linked_list * list);
+
+void create_first_pass_file(char * filename);
