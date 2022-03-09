@@ -71,7 +71,6 @@ void check_macro()
             temp_text[i] = (char *)malloc(81 * sizeof(char));
 
         num_of_rows = i = 0;
-        printf("%s\n", line);
 
         if (strstr(line, start_of_macro_pattern) != NULL)
         {    
@@ -83,10 +82,8 @@ void check_macro()
 
             while (fgets(line, MAX_LENGTH + 1, original_f))
             {
-                printf("%s\n", line);
                 if (strstr(line, end_of_macro_pattern) == NULL)
                 {
-                    printf("here1\n");
                     num_of_rows++;
                     if (i > 6)
                     {
@@ -95,30 +92,21 @@ void check_macro()
                     }
                     
                     strcpy(temp_text[i++], line);
-                    printf("here2\n");
                 }
                 else
                 {
-                    printf("here3\n");
                     macro_keywords_list->head = add_to_list(macro_keywords_list, temp_name, temp_text, num_of_rows);
-                    printf("here4\n");
                     /* Reset string array */
                     for (i = 0; i < num_of_rows; i++)
                         free(temp_text[i]);
-                    printf("after for loop\n");
                     free(temp_text);
-                    printf("after free temp_text\n");
                     free(temp_name);
-                    printf("after free temp_name\n");
                     i = 0;
-                    printf("here5\n");
                     break; /* We go and look for the next macro definition */
                 }
             }
         }
     }
-    printf("here6\n");
-
     rewind(original_f);
     first_pass(macro_keywords_list);
 }
