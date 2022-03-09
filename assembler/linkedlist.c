@@ -9,9 +9,9 @@ linked_list * create_empty_list()
     return new_head;
 }
 
-node * add_to_list(linked_list * list, char * new_name, char **new_text)
+node * add_to_list(linked_list * list, char * new_name, char **new_text, int number_of_rows)
 {
-    int i, j;
+    int i;
 
     node * new_node;
     node * temp;
@@ -20,19 +20,18 @@ node * add_to_list(linked_list * list, char * new_name, char **new_text)
 
     new_node->name = (char *)malloc(81 * sizeof(char));
 
-    new_node->name = new_name;
+    strcpy(new_node->name, new_name);
 
     new_node->text = (char **)calloc(6, sizeof(char *));
     for (i = 0; i < 6; i++)
         new_node->text[i] = (char *)calloc(81, sizeof(char));
 
-    for (i = 0; i < sizeof(new_text) / sizeof(new_text[0]); i++)
+    for (i = 0; i < number_of_rows; i++)
     {
-        for (j = 0; j < sizeof(new_text[0]) / sizeof(new_text)[0][0]; j++)
-        {
-            new_node->text[i][j] = new_text[i][j];
-        }
+        strcpy(new_node->text[i], new_text[i]);
     }
+
+    new_node->num_of_rows = number_of_rows;
 
     new_node->next = NULL;
 
@@ -64,6 +63,6 @@ int get_number_of_nodes(linked_list * list)
         temp = temp->next;
         count++;
     }
-
+    
     return count;
 }

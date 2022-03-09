@@ -50,6 +50,7 @@ void check_macro()
     char * found_macro;
     char * temp_name;
     int i;
+    int num_of_rows;
     
     linked_list * macro_keywords_list;
 
@@ -58,12 +59,20 @@ void check_macro()
     temp_name = (char *)malloc(MAX_LENGTH * sizeof(char));
 
     for (i = 0; i < 6; i++)
-        temp_text[i] = (char *)calloc(81, sizeof(char));
-
-    i = 0;
+        temp_text[i] = (char *)malloc(81 * sizeof(char));
+        
 
     while (fgets(line, MAX_LENGTH + 1, original_f))
     {
+        temp_name = (char *)malloc(MAX_LENGTH * sizeof(char));
+        temp_text = (char **)calloc(6, sizeof(char *));
+
+        for (i = 0; i < 6; i++)
+            temp_text[i] = (char *)malloc(81 * sizeof(char));
+
+        num_of_rows = i = 0;
+        printf("%s\n", line);
+
         if (strstr(line, start_of_macro_pattern) != NULL)
         {    
             found_macro = line + strlen(start_of_macro_pattern);
@@ -71,55 +80,75 @@ void check_macro()
             found_macro[strlen(found_macro) - 1] = '\0';
 
             strcpy(temp_name, found_macro);
+
             while (fgets(line, MAX_LENGTH + 1, original_f))
             {
+                printf("%s\n", line);
                 if (strstr(line, end_of_macro_pattern) == NULL)
                 {
+                    printf("here1\n");
+                    num_of_rows++;
                     if (i > 6)
                     {
                         perror("macro text out of bounds");
                         exit(0);
                     }
+                    
                     strcpy(temp_text[i++], line);
+                    printf("here2\n");
                 }
                 else
                 {
-                    macro_keywords_list->head = add_to_list(macro_keywords_list, temp_name, temp_text);
+                    printf("here3\n");
+                    macro_keywords_list->head = add_to_list(macro_keywords_list, temp_name, temp_text, num_of_rows);
+                    printf("here4\n");
                     /* Reset string array */
-                    for (i = 0; i < 6; i++)
+                    for (i = 0; i < num_of_rows; i++)
                         free(temp_text[i]);
+                    printf("after for loop\n");
                     free(temp_text);
+                    printf("after free temp_text\n");
                     free(temp_name);
+                    printf("after free temp_name\n");
                     i = 0;
+                    printf("here5\n");
                     break; /* We go and look for the next macro definition */
                 }
             }
         }
     }
+    printf("here6\n");
 
     rewind(original_f);
     first_pass(macro_keywords_list);
 }
 
-/* FIND BUG HERE */
 void first_pass(linked_list * list)
 {
     char line[MAX_LENGTH + 1];
-    int i = 0;
-    int macro_found_flag = 0;
+    char macro_def_line[MAX_LENGTH + 1];
+    char temp_string[MAX_LENGTH + 1] = "macro ";
+    int i;
+    int macro_found_flag;
     node * temp;
 
     temp = list->head;
 
     while (fgets(line, MAX_LENGTH + 1, original_f))
     {
+        macro_found_flag = 0;
+        temp = list->head;
         /* for each line, we check if it contains one of the macro keywords */
         for (i = 0; i < get_number_of_nodes(list); i++)
         {
-            if (strstr(line, temp->name) != NULL)
+            /* Reset the string so we use it for checks */
+            strcpy(macro_def_line, temp_string);
+            strcat(macro_def_line, temp->name);
+
+            if (strstr(line, temp->name) != NULL && strstr(line, macro_def_line) == NULL)
             {
                 macro_found_flag = 1;
-                for (i = 0; i < sizeof(temp->text) / sizeof(temp->text[0]); i++)
+                for (i = 0; i < temp->num_of_rows; i++)
                 {
                     if (fputs(temp->text[i], post_macro_f) == EOF)
                     {
@@ -129,7 +158,9 @@ void first_pass(linked_list * list)
                 }
             }
             else
+            {
                 temp = temp->next;
+            }
         }
         if (!macro_found_flag)
         {
@@ -141,7 +172,6 @@ void first_pass(linked_list * list)
             macro_found_flag = 0;
         }
     }
-
     rewind(original_f);
     rewind(post_macro_f);
 }
