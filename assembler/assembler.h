@@ -3,16 +3,18 @@
 #include <string.h>
 #include <ctype.h>
 #include "linkedlist.h"
+#include "symbollinkedlist.h"
+#include "datalinkedlist.h"
 
-typedef struct opcode_word {
+typedef struct word_without_operands {
     unsigned int opcode : 16;
     unsigned int E : 1;
     unsigned int R : 1;
     unsigned int A : 1;
     unsigned int msb : 1;
-} opcode_word;
+} word_without_operands;
 
-typedef struct other_word {
+typedef struct word_with_operands {
     unsigned int destination_adress : 2;
     unsigned int destination_register : 4;
     unsigned int source_adress : 2;
@@ -22,7 +24,7 @@ typedef struct other_word {
     unsigned int R : 1;
     unsigned int A : 1;
     unsigned int msb : 1;
-} other_word;
+} word_with_operands;
 
 enum registers {
     R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15
@@ -93,6 +95,14 @@ void create_copy(int line_number);
 
 int count_number_of_lines_in_file(FILE * file);
 
-void first_pass(linked_list * list);
+void put_macro(linked_list * list);
 
 void create_first_pass_file(char * filename);
+
+void first_pass();
+
+int calculate_base_adress(int num);
+
+void reset_attributes(struct attributes * label_attributes);
+
+data_node * add_to_data_list(data_linked_list * list, int new_base_adress, int operands_flag, struct word_with_operands word_with, struct word_without_operands word_without);

@@ -3,7 +3,6 @@
 
 FILE *original_f; /* original .as file */
 FILE *post_macro_f; /* post macro file (1st pass) with the file extension .am */
-FILE *copy_f;
 
 char * global_filename;
 
@@ -108,10 +107,11 @@ void check_macro()
         }
     }
     rewind(original_f);
-    first_pass(macro_keywords_list);
+    put_macro(macro_keywords_list);
+    first_pass();
 }
 
-void first_pass(linked_list * list)
+void put_macro(linked_list * list)
 {
     char line[MAX_LENGTH + 1];
     char macro_def_line[MAX_LENGTH + 1];
