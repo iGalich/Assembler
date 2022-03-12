@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include "linkedlist.h"
 #include "symbollinkedlist.h"
-#include "word.h"
+#include "datalinkedlist.h"
 
 typedef struct word_without_operands {
     unsigned int opcode : 16;
@@ -12,7 +12,7 @@ typedef struct word_without_operands {
     unsigned int R : 1;
     unsigned int A : 1;
     unsigned int msb : 1;
-} word_without_operands;
+} word_without_operands ;
 
 typedef struct word_with_operands {
     unsigned int destination_adress : 2;
@@ -49,8 +49,7 @@ enum command_names {
     STOP
 };
 
-
-
+data_node * add_to_data_list(data_linked_list * list, int adress, int flag, word_with_operands *, word_without_operands *);
 /*
  * This function looks in the folder for the file with the filename with the file extension .as
  * *filename : the filename we're searching for
@@ -97,12 +96,14 @@ void create_copy(int line_number);
 
 int count_number_of_lines_in_file(FILE * file);
 
-void put_macro(linked_list * list);
-
-void create_first_pass_file(char * filename);
+void macro_pass(linked_list * list);
 
 void first_pass();
 
 int calculate_base_adress(int num);
 
 void reset_attributes(struct attributes * label_attributes);
+
+void create_post_macro_file(char * filename);
+
+char * chop_first_n_characters(char * str, size_t n);

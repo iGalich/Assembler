@@ -3,6 +3,7 @@
 
 FILE *original_f; /* original .as file */
 FILE *post_macro_f; /* post macro file (1st pass) with the file extension .am */
+FILE *copy_f;
 
 char * global_filename;
 
@@ -25,11 +26,11 @@ void look_for_file(char * filename)
     filename_length = strlen(filename);
     filename[filename_length - extension_length] = '\0'; /* remove the file extension */
 
-    create_first_pass_file(filename);
+    create_post_macro_file(filename);
     check_macro();
 }
 
-void create_first_pass_file(char * filename)
+void create_post_macro_file(char * filename)
 {
     strcat(filename, ".am"); /* adds the file extension .am to the file name */
 
@@ -107,11 +108,11 @@ void check_macro()
         }
     }
     rewind(original_f);
-    put_macro(macro_keywords_list);
+    macro_pass(macro_keywords_list);
     first_pass();
 }
 
-void put_macro(linked_list * list)
+void macro_pass(linked_list * list)
 {
     char line[MAX_LENGTH + 1];
     char macro_def_line[MAX_LENGTH + 1];

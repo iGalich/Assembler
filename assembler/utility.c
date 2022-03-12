@@ -26,3 +26,13 @@ void delete_spaces(char input[])
 
     input[position] = '\0'; /* sets the end of the string */
 }
+
+char * chop_first_n_characters(char * str, size_t n)
+{
+    if (n > strlen(str))
+    {
+        fprintf(stderr, "out of bounds after getting %s and %d\n", str, n);
+        exit(0);
+    }
+    return str + n;
+}

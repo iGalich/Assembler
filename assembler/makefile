@@ -1,8 +1,8 @@
 FLAGS = gcc -c -Wall -ansi -pedantic
 
-ASSEMBLER_OBJECTS = assembler.o filefunc.o utility.o linkedlist.o firstpass.o symbollinkedlist.o datalinkedlist.o
+ASSEMBLER_OBJECTS = assembler.o filefunc.o utility.o linkedlist.o symbollinkedlist.o datalinkedlist.o firstpass.o
 
-HEADERS = assembler.h linkedlist.h const.h symbollinkedlist.h
+HEADERS = assembler.h linkedlist.h const.h symbollinkedlist.h datalinkedlist.h
 
 assembler: $(ASSEMBLER_OBJECTS)
 	gcc -g -ansi -Wall -ansi -pedantic $(ASSEMBLER_OBJECTS) -o assembler
@@ -19,14 +19,14 @@ utility.o: utility.c $(HEADERS)
 linkedlist.o: linkedlist.c $(HEADERS)
 	$(FLAGS) linkedlist.c -o linkedlist.o
 
-firstpass.o: firstpass.c $(HEADERS)
-	$(FLAGS) firstpass.c -o firstpass.o
-
 symbollinkedlist.o: symbollinkedlist.c $(HEADERS)
 	$(FLAGS) symbollinkedlist.c -o symbollinkedlist.o
 
 datalinkedlist.o: datalinkedlist.c $(HEADERS)
 	$(FLAGS) datalinkedlist.c -o datalinkedlist.o
+
+firstpass.o: firstpass.c $(HEADERS)
+	$(FLAGS) firstpass.c -o firstpass.o
 
 remove:
 	rm *.o

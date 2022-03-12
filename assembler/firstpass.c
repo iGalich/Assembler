@@ -1,22 +1,6 @@
 #include "assembler.h"
 #include "const.h"
 
-typedef struct data_node {
-    int address;
-    int operands_flag;
-    struct word_with_opernads word_with;
-    struct word_without_opernds word_without;
-    struct data_node * next;
-} data_node;
-
-typedef struct {
-    data_node * head;
-} data_linked_list;
-
-data_linked_list * create_empty_data_list();
-
-data_node * add_to_data_list(data_linked_list * list, int new_base_adress, int operands_flag, struct word_with_operands word_with, struct word_without_operands word_without);
-
 extern FILE *post_macro_f;
 
 /* step 1 */
@@ -68,10 +52,10 @@ void first_pass()
     int temp_data_holder = 0;
 
     word_with_operands word_with;
-    word_with_operands * p_word_with = &word_with;
+    word_with_operands * p_word_with = NULL;
 
     word_without_operands word_without;
-    word_without_operands * p_word_without = &word_without;
+    word_without_operands * p_word_without = NULL;
 
     struct attributes label_attributes;
 
@@ -84,56 +68,77 @@ void first_pass()
     line = (char *)malloc(MAX_LENGTH * sizeof(char));
     temp = (char *)malloc(MAX_LENGTH * sizeof(char));
 
-    reset_attributes(&label_attributes);
+    p_word_with = (word_with_operands *)malloc(sizeof(word_with_operands));
+    p_word_with = &word_with;
 
+    p_word_without = (word_without_operands *)malloc(sizeof(word_without_operands));
+    p_word_without = &word_without;
+
+    reset_attributes(&label_attributes);
+    
     /* step 2 */
     while (fgets(line, MAX_LENGTH, post_macro_f))
     {
+        printf("%s\n", line);
+
+        counter = 0;
         /* looks for word until space is encounterd */
         /* TODO change to isspace */
         while (line[counter] != ' ')
         {
             counter++;
         }
-        strncpy(temp, line, counter);
+        printf("here0\n");
+        strcpy(temp, line);
+        temp[strlen(temp) - (strlen(line) - counter)] = '\0';
+        /*strncpy(temp, line, counter);*/
         counter = 0;
-
+        printf("here1\n");
         /* step 3 */
         /* check if is a label by checking for a colon */
         if (strstr(temp, ":") != NULL)
         {
+            printf("here2\n");
             label_found_flag = 1; /* step 4 */
 
             /* remove the label from the string */
-            line += strlen(temp);
+            line = chop_first_n_characters(line, strlen(temp));
             line = skip_white_space_at_start(line);
 
             temp[strlen(temp) - 1] = '\0'; /* removes the colon */
+
         }
+        printf("here3\n");
 
         /* step 5 */
         if (strstr(line, data_keyword) != NULL || strstr(line, string_keyword) != NULL)
         {
+            printf("here4\n");
             /* step 6 */
             if (label_found_flag)
             {
+                printf("here5\n");
                 label_attributes.data = 1;
                 /* TODO add error check of step 6 */
                 add_to_symbol_list(symbol_list, temp, IC, calculate_base_adress(IC), IC - calculate_base_adress(IC), label_attributes);
+                printf("here6\n");
             }
             /* step 7 */
             if (strstr(line, data_keyword) != NULL)
             {
+                /* TODO Work on this section next */
+                printf("here7\n");
                 while (line != '\0')
                 {
-                    line += strlen(data_keyword); /* removes .data */
+                    line = chop_first_n_characters(line, strlen(data_keyword)); /* removes .data */
                     line = skip_white_space_at_start(line);
 
                     /* look for number */
-                    while (!isdigit(line[counter]))
+                    while (isdigit(line[counter]))
                     {
                         counter++;
                     }
+                    printf("here8\n");
                     strncpy(temp, line, counter);
                     counter = 0;
                     line += strlen(temp) + 1;
@@ -142,23 +147,50 @@ void first_pass()
 
                     word_without.A = 1;
                     word_without.opcode = temp_data_holder;
-
+                    printf("here9\n");
                     add_to_data_list(data_list, IC, 0, p_word_with, p_word_without);
+                    printf("here10\n");
+                    printf("%d\n", data_list->head->word_without->opcode);
                 }
             }
+            /* TODO change this bit to get character by character and not entire string god fucking dammit */
             else if (strstr(line, string_keyword) != NULL)
             {
-                while (line != '\0')
+                printf("here11\n");
+                while (line[counter] != '\n' && line[counter] != '\0')
                 {
-                    line += strlen(string_keyword);
+                    printf("gottem here\n");
+                    printf("%s\n", line);
+                    line = chop_first_n_characters(line, strlen(string_keyword));
                     line = skip_white_space_at_start(line);
 
+                    printf("here12\n");
+                    printf("%s\n", line);
                     do
                     {
                         counter++;
+                        printf("%c\n", line[counter]);
                     } while (line[counter] != '"');
-                    strncpy(temp, line, counter);
-                    temp += 1;
+
+                    printf("here13\n");
+                    strcpy(temp, line);
+                    printf("%d\n", counter - 1);
+                    temp[counter] = '\0';
+                    /*temp[strlen(temp) - 1] = '\0';*/
+                    printf("temp is : %s\n", temp);
+                    printf("here14\n");
+                    temp = chop_first_n_characters(temp, 1);
+                    printf("%s\n", temp);
+                    printf("%s\n", line);
+                    printf("characters to chop : %d\n", strlen(temp) + 2);
+                    printf("length of line is %d\n", strlen(line));
+                    line = chop_first_n_characters(line, strlen(temp) + 2);
+                    line = skip_white_space_at_start(line);
+                    printf("%s\n", line);
+                    counter = 0;
+                    if(line[counter] == '\n' || line[counter] == '\0')
+                        printf("found end\n");
+
                 }
             }
         }
