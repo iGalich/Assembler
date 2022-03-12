@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include "linkedlist.h"
 #include "symbollinkedlist.h"
-#include "datalinkedlist.h"
+#include "word.h"
 
 typedef struct word_without_operands {
     unsigned int opcode : 16;
@@ -48,6 +48,8 @@ enum command_names {
     RTS,
     STOP
 };
+
+
 
 /*
  * This function looks in the folder for the file with the filename with the file extension .as
@@ -104,5 +106,3 @@ void first_pass();
 int calculate_base_adress(int num);
 
 void reset_attributes(struct attributes * label_attributes);
-
-data_node * add_to_data_list(data_linked_list * list, int new_base_adress, int operands_flag, struct word_with_operands word_with, struct word_without_operands word_without);
