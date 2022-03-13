@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <sys/stat.h>
 #include "linkedlist.h"
 #include "symbollinkedlist.h"
 #include "datalinkedlist.h"
@@ -107,3 +108,9 @@ void reset_attributes(struct attributes * label_attributes);
 void create_post_macro_file(char * filename);
 
 char * chop_first_n_characters(char * str, size_t n);
+
+size_t strlcat(char *, const char *, size_t);
+
+size_t strlcpy(char *, const char *, size_t);
+
+size_t strlcpy2(char *, const char *, size_t);

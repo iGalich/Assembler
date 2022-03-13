@@ -9,6 +9,10 @@ int DC = 0;
 
 void first_pass()
 {
+    struct stat sb;
+
+    char *file_contents;
+
     const char *data_keyword = ".data";
     const char *string_keyword = ".string";
     const char *reserved_words[STOP + R15 + 2] = {"r0",
@@ -43,7 +47,7 @@ void first_pass()
                                             "prn",
                                             "rts",
                                             "stop"};
-    
+
     char * line;
     char * temp;
     char ch;
@@ -76,22 +80,43 @@ void first_pass()
 
     reset_attributes(&label_attributes);
     
-    /* step 2 */
-    while (fgets(line, MAX_LENGTH, post_macro_f))
+    if (stat("text1.am", &sb) == -1)
     {
-        printf("%s\n", line);
+        perror("stat\n");
+        exit(0);
+    }    
 
+    file_contents = malloc(sb.st_size);
+
+    while(fscanf(post_macro_f, " %[^\n ]", file_contents) != EOF)
+        printf("> %s\n", file_contents);
+
+    exit(0);
+
+    /* step 2 */
+    while (fgets(line, MAX_LENGTH, post_macro_f) != NULL)
+    {
+        line = skip_white_space_at_start(line);
+        line[strcspn(line, "\n")] = '\0';
+        memset(temp, 0, strlen(temp));
+
+
+        printf("new line is %s\n", line);
+        printf("temp is %s\n", temp);
         counter = 0;
         /* looks for word until space is encounterd */
         /* TODO change to isspace */
-        while (line[counter] != ' ')
+        while (!isspace(line[counter]))
         {
             counter++;
         }
+        printf("%d\n", counter);
         printf("here0\n");
-        strcpy(temp, line);
-        temp[strlen(temp) - (strlen(line) - counter)] = '\0';
-        /*strncpy(temp, line, counter);*/
+        printf("before any changes line is %s and temp is %s\n", line, temp);
+        /*strcpy(temp, line);*/
+        strlcpy(temp, line, strlen(line));
+        printf("after first change line is %s and temp is %s\n", line, temp);
+        temp[counter] = '\0';
         counter = 0;
         printf("here1\n");
         /* step 3 */
@@ -100,7 +125,7 @@ void first_pass()
         {
             printf("here2\n");
             label_found_flag = 1; /* step 4 */
-
+            printf("line is %s and temp is %s\n", line, temp);
             /* remove the label from the string */
             line = chop_first_n_characters(line, strlen(temp));
             line = skip_white_space_at_start(line);
@@ -126,20 +151,22 @@ void first_pass()
             /* step 7 */
             if (strstr(line, data_keyword) != NULL)
             {
-                /* TODO Work on this section next */
                 printf("here7\n");
-                while (line != '\0')
+                line = chop_first_n_characters(line, strlen(data_keyword)); /* removes .data */
+                line = skip_white_space_at_start(line);
+                while (line[counter] != '\n' && line[counter] != '\0')
                 {
-                    line = chop_first_n_characters(line, strlen(data_keyword)); /* removes .data */
-                    line = skip_white_space_at_start(line);
-
+                    printf("here7andahalf\n");
+                    printf("after chop and white space skip line is : %s\n", line);
                     /* look for number */
-                    while (isdigit(line[counter]))
+                    while (isdigit(line[counter]) || line[counter] == '-')
                     {
                         counter++;
                     }
                     printf("here8\n");
-                    strncpy(temp, line, counter);
+                    /*strncpy(temp, line, counter);*/
+                    strlcpy(temp, line, counter + 1);
+                    printf("temp is %s\n", temp);
                     counter = 0;
                     line += strlen(temp) + 1;
 
@@ -150,7 +177,7 @@ void first_pass()
                     printf("here9\n");
                     add_to_data_list(data_list, IC, 0, p_word_with, p_word_without);
                     printf("here10\n");
-                    printf("%d\n", data_list->head->word_without->opcode);
+                    printf("added %d\n", data_list->head->word_without->opcode);
                 }
             }
             /* TODO change this bit to get character by character and not entire string god fucking dammit */
@@ -173,7 +200,8 @@ void first_pass()
                     } while (line[counter] != '"');
 
                     printf("here13\n");
-                    strcpy(temp, line);
+                    /*strcpy(temp, line);*/
+                    strlcpy(temp, line, strlen(line));
                     printf("%d\n", counter - 1);
                     temp[counter] = '\0';
                     /*temp[strlen(temp) - 1] = '\0';*/
@@ -194,6 +222,8 @@ void first_pass()
                 }
             }
         }
+        /*memset(line, 0, strlen(line));*/
+        line[0] = '\0';
     }
 }
 
