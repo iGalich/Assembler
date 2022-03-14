@@ -41,6 +41,26 @@ void create_post_macro_file(char * filename)
     }
 }
 
+void create_copy(FILE * target, FILE * source)
+{
+    char ch;
+
+    if (!(copy_f = fopen("copy.am", "w+")))
+    {
+        fprintf(stderr, "cannot create copy file\n");
+        exit(0);
+    }
+    
+    while ((ch = fgetc(source)) != EOF){
+        printf("here1\n");
+        fputc(ch, target);
+        printf("here2\n");
+    }
+
+    rewind(source);
+    rewind(target);
+}
+
 void check_macro()
 {
     const char *start_of_macro_pattern = "macro";
