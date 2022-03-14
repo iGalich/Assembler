@@ -36,3 +36,45 @@ char * chop_first_n_characters(char * str, size_t n)
     }
     return str + n;
 }
+
+int count_words_in_lines(char * string)
+{
+    int i, count = 0;
+    int in_word_flag = 0;
+
+    string = skip_white_space_at_start(string);
+
+    do switch (*string)
+    {
+        case '\0':
+        case ' ':
+        case '\t':
+        case '\n':
+        case '\r':
+        case ',':
+            if (in_word_flag)
+            {
+                in_word_flag = 0;
+                count++;
+            }
+            break;
+        default:
+            in_word_flag = 1;
+    } while (*string++);
+    
+    return count;
+}
+
+int count_number_of_lines_in_file(FILE * file)
+{
+    int count = 0;
+    char ch;
+
+    for (ch = getc(file); ch != EOF; ch = getc(file))
+    {
+        if (ch == '\n')
+            count++;
+    }
+    rewind(file);
+    return count;
+}
