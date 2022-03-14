@@ -93,7 +93,7 @@ void replace_macro(linked_list * list, int delete_line, int last_line);
  */
 void find_macro_instances(linked_list * list);
 
-void create_copy(int line_number);
+void create_copy(FILE * target, FILE * source);
 
 int count_number_of_lines_in_file(FILE * file);
 
@@ -114,3 +114,7 @@ size_t strlcat(char *, const char *, size_t);
 size_t strlcpy(char *, const char *, size_t);
 
 size_t strlcpy2(char *, const char *, size_t);
+
+int count_words_in_lines(char * string);
+
+void reset_words(struct word_with_operands * word_with, struct word_without_operands * word_without);
