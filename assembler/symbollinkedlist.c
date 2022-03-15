@@ -58,3 +58,21 @@ int get_number_of_symbol_nodes(symbol_linked_list * list)
     
     return count;
 }
+
+void update_data_symbols(symbol_linked_list * list, int L)
+{
+    symbol_node * temp;
+
+    temp = list->head;
+
+    while (temp != NULL)
+    {
+        if (temp->symbol_attributes.data == 1)
+        {
+            temp->base_address += L;
+            temp->decimal_value = temp->base_address - calculate_base_adress(temp->base_address);
+            temp->offset = temp->base_address - temp->decimal_value;
+        }
+        temp = temp->next;
+    }
+}

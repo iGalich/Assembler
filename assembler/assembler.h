@@ -16,9 +16,9 @@ typedef struct word_without_operands {
 } word_without_operands ;
 
 typedef struct word_with_operands {
-    unsigned int destination_adress : 2;
+    unsigned int destination_address_mode : 2;
     unsigned int destination_register : 4;
-    unsigned int source_adress : 2;
+    unsigned int source_address_mode : 2;
     unsigned int source_register : 4;
     unsigned int function : 4;
     unsigned int E : 1;
@@ -116,5 +116,13 @@ size_t strlcpy(char *, const char *, size_t);
 size_t strlcpy2(char *, const char *, size_t);
 
 int count_words_in_lines(char * string);
+
+int get_command_index(char * command);
+
+int get_register_index(char * string);
+
+int get_address_mode(char * string, int index);
+
+void second_pass();
 
 void reset_words(struct word_with_operands * word_with, struct word_without_operands * word_without);
