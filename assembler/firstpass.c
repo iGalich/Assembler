@@ -60,6 +60,8 @@ void first_pass()
     const char * string_keyword = ".string";
     const char * entry_keyword = ".entry";
     const char * extern_keyword = ".extern";
+    const char * macro_start_keyword = "macro";
+    const char * macro_end_keyword = "endm";
     
 
     int num_of_words = 0;
@@ -73,10 +75,7 @@ void first_pass()
     int global_L = 0;
 
     word_with_operands word_with;
-    word_with_operands * p_word_with = NULL;
-
     word_without_operands word_without;
-    word_without_operands * p_word_without = NULL;
 
     struct attributes label_attributes;
 
@@ -86,15 +85,11 @@ void first_pass()
     symbol_list = create_empty_symbol_list();
     data_list = create_empty_data_list();
 
-    p_word_with = (word_with_operands *)malloc(sizeof(word_with_operands));
-    p_word_with = &word_with;
-
-    p_word_without = (word_without_operands *)malloc(sizeof(word_without_operands));
-    p_word_without = &word_without;
-
     line = (char *)malloc(MAX_LENGTH * sizeof(char));
 
     reset_attributes(&label_attributes);
+
+    reset_words(&word_with, &word_without);
 
     if (!(copy_f = fopen("copy.am", "w+")))
     {
@@ -122,44 +117,57 @@ void first_pass()
     while(fscanf(post_macro_f, " %[^\n ]", file_contents) != EOF)
     {
         step_02:
-        printf("step 2 %s\n", file_contents);
+        printf("step 2 curr word is %s\n", file_contents);
+        /* skip over macro definition */
+        if (!strcmp(file_contents, macro_start_keyword))
+        {
+            while (strcmp(file_contents, macro_end_keyword))
+            {
+                fscanf(post_macro_f, " %[^\n ]", file_contents);
+                printf("new word is %s\n", file_contents);
+            }
+            continue; /* going for next word after finding end of macro definition */
+        }
+
         label_found_flag = 0;
         /* STEP 3 check for label, if not goto step 5 */
         printf("step 3\n");
         if (strstr(file_contents, ":") != NULL)
         {
-            printf("step 4 found label\n");
             /* STEP 4 label found -> flag on */
+            printf("step 4\n");
             label_found_flag = 1;
             file_contents[strlen(file_contents) - 1] = '\0'; /* remove colon */
 
             strlcpy(previous_word, file_contents, strlen(previous_word));
 
             fscanf(post_macro_f, " %[^\n ]", file_contents);
+            printf("new word is %s\n", file_contents);
         }
 
-        printf("step 5 checking if instruction to store data or string\n");
         /* STEP 5 check if it is an instruction to store data, if not goto step 8 */
+        printf("step 5\n");
         if (strstr(file_contents, data_keyword) != NULL || strstr(file_contents, string_keyword) != NULL)
         {
-            printf("found instruction to store data or string\n");
             /* STEP 6 store symbol */
             if (label_found_flag)
             {
-                printf("step 6 adding symbol\n");
+                printf("step 6\n");
                 label_attributes.data = 1;
                 /* TODO add error check of step 6 */
                 add_to_symbol_list(symbol_list, previous_word, IC, calculate_base_adress(IC), IC - calculate_base_adress(IC), label_attributes);
-                IC++;
+                printf("added to %d\n", IC);
+                printf("added %s to symbol list\n", previous_word);
                 reset_attributes(&label_attributes);
             }
             /* STEP 7 check which data type to store, store and then increase DC; return to step 2 */
             if (strstr(file_contents, data_keyword) != NULL)
             {
-                printf("in step 7 storing data\n");
+                printf("in step 7 of data\n");
                 step_07_data:
 
                 fscanf(post_macro_f, " %[^\n ]", file_contents);
+                printf("new word is %s\n", file_contents);
 
                 /* check if it is not a number, if true it means we got to the next line */
                 if (isalpha(file_contents[0]) || file_contents[0] == '.')
@@ -175,9 +183,12 @@ void first_pass()
                 word_without.A = 1;
                 word_without.opcode = temp_data_holder;
 
-                add_to_data_list(data_list, IC, 0, p_word_with, p_word_without);
+                add_to_data_list(data_list, IC, 0, word_with, word_without);
+                printf("added to %d\n", IC);
+                printf("added %d to data list", (&word_without)->opcode);
                 IC++;
-                reset_words(p_word_with, p_word_without);
+                printf("IC is now %d\n", IC);
+                reset_words(&word_with, &word_without);
 
                 DC++;
 
@@ -185,10 +196,11 @@ void first_pass()
             }
             else /* we know for sure it is a string data type */
             {
-                printf("in step 7 storing string\n");
+                printf("in step 7 of string\n");
                 step_07_string:
 
                 fscanf(post_macro_f, " %[^\n ]", file_contents);
+                printf("new word is %s\n", file_contents);
 
                 /* check if it is a string, otherwise we got to the next line */
                 if (file_contents[0] != '"')
@@ -204,10 +216,13 @@ void first_pass()
                 for (j = 0; j < strlen(file_contents); j++)
                 {
                     word_without.opcode = file_contents[j];
-                    add_to_data_list(data_list, IC, 0, p_word_with, p_word_without);
+                    add_to_data_list(data_list, IC, 0, word_with, word_without);
+                    printf("added to %d\n", IC);
+                    printf("added %c to data list\n", file_contents[j]);
                     IC++;
+                    printf("IC is now %d\n", IC);
                 }
-                reset_words(p_word_with, p_word_without);
+                reset_words(&word_with, &word_without);
 
                 DC++;
 
@@ -219,46 +234,51 @@ void first_pass()
         /* STEP 8 check if extern or entry, else goto step 11 */
         else if (strstr(file_contents, extern_keyword))
         {
-            printf("step 10 add symbol with extern attribute\n");
+            printf("step 10 adding symbol\n");
             /* STEP 10 add symbol to symbol list with extern attribute */
             fscanf(post_macro_f, " %[^\n ]", file_contents);
+            printf("new word is %s\n", file_contents);
 
             /* TODO check if label is already in symbol list, print error if needed, this is an error check of step 10 */
             label_attributes.external = 1;
             add_to_symbol_list(symbol_list, file_contents, 0, 0, 0, label_attributes);
-            printf("added to symbol list %s\n", file_contents);
+            printf("added %s to symbol list\n", file_contents);
             reset_attributes(&label_attributes);
+            continue;
         }
         /* STEP 9 if entry go back to step 2 */
         else if (strstr(file_contents, entry_keyword))
         {
-            printf("in step 9 found entry keyword\n");
+            fscanf(post_macro_f, " %[^\n ]", file_contents);
+            printf("skipping over word %s\n", file_contents);
             continue;
         }
         /* STEP 11 check for label, add if true */
         else if (strstr(file_contents, ":"))
         {
+            printf("step 11\n");
             strlcpy(previous_word, file_contents, strlen(previous_word));
 
             fscanf(post_macro_f, " %[^\n ]", file_contents);
+            printf("new word is %s\n", file_contents);
 
             previous_word[strlen(previous_word) - 1] = '\0'; /* remove colon */
 
             label_attributes.code = 1;
             add_to_symbol_list(symbol_list, previous_word, IC, calculate_base_adress(IC), IC - calculate_base_adress(IC), label_attributes);
+            printf("added to %d\n", IC);
             reset_attributes(&label_attributes);
-            IC++;
             printf("added to symbol list with code attribute %s\n", previous_word);
         }
-        printf("checking %s for command\n", file_contents);
         /* STEP 12 check for command */
+        printf("checking for command\n");
         if ((command_index = get_command_index(file_contents)) == -1)
             error_found_flag = 1;
         
         /* first group, commands that get 2 operands */
         if (command_index >= MOV && command_index <= LEA)
         {
-            printf("in first group check\n");
+            printf("in first group\n");
             word_without.A = 1;
             
             switch (command_index)
@@ -274,7 +294,7 @@ void first_pass()
                 word_without.opcode = pow(2, 2);
                 break;
             case LEA:
-                word_without.opcode = pow(2, 3);
+                word_without.opcode = pow(2, 4);
                 break;
 
             /* UNREACHABLE */
@@ -282,13 +302,14 @@ void first_pass()
                 break;
             }
 
-            add_to_data_list(data_list, IC, 0, p_word_with, p_word_without);
-            reset_words(p_word_with, p_word_without);
-            L++;
+            add_to_data_list(data_list, IC, 0, word_with, word_without);
+            printf("added to %d\n", IC);
+            reset_words(&word_with, &word_without);
             IC++;
-
+            printf("IC is now %d\n", IC);
             /* check the source operand */
             fscanf(post_macro_f, " %[^\n ]", file_contents);
+            printf("new word is %s\n", file_contents);
 
             word_with.A = 1;
             if (command_index == ADD)
@@ -307,6 +328,7 @@ void first_pass()
 
             /* check the destination operand */
             fscanf(post_macro_f, " %[^\n ]", file_contents);
+            printf("new word is %s\n", file_contents);
 
             register_index = get_register_index(file_contents);
 
@@ -317,18 +339,20 @@ void first_pass()
 
             word_with.destination_address_mode = get_address_mode(file_contents, register_index);
 
-            if (word_with.destination_address_mode == 0 || word_with.source_address_mode == 0)
+            if (word_with.destination_address_mode != 0 || word_with.source_address_mode != 0)
             {
-                add_to_data_list(data_list, IC, 1, p_word_with, p_word_without);
-                IC++;
+                
             }
-            reset_words(p_word_with, p_word_without);
-            L++;
+            add_to_data_list(data_list, IC, 1, word_with, word_without);
+            printf("added to %d\n", IC);
+            IC++;
+            reset_words(&word_with, &word_without);
+            printf("IC is now %d\n", IC);
         }
         /* second group, commands with a single operands */
         else if (command_index >= CLR && command_index <= PRN)
         {
-            printf("in second group check\n");
+            printf("in second group\n");
             word_without.A = 1;
             switch (command_index)
             {
@@ -336,31 +360,33 @@ void first_pass()
             case NOT:
             case INC:
             case DEC:
-                word_without.opcode = pow(2, 4);
+                word_without.opcode = pow(2, 5);
                 break;
             case JMP:
             case BNE:
             case JSR:
-                word_without.opcode = pow(2, 10);
+                word_without.opcode = pow(2, 9);
                 break;
             case RED:
-                word_without.opcode = pow(2, 13);
+                word_without.opcode = pow(2, 12);
                 break;
             case PRN:
-                word_without.opcode = pow(2, 14);
+                word_without.opcode = pow(2, 13);
                 break;
             
             /* UNREACHABLE */
             default:
                 break;
             }
-            add_to_data_list(data_list, IC, 0, p_word_with, p_word_without);
-            L++;
+            add_to_data_list(data_list, IC, 0, word_with, word_without);
+            printf("added to %d\n", IC);
             IC++;
-            reset_words(p_word_with, p_word_without);
+            printf("IC is now %d\n", IC);
+            reset_words(&word_with, &word_without);
 
             /* check single operand */
             fscanf(post_macro_f, " %[^\n ]", file_contents);
+            printf("new word is %s\n", file_contents);
 
             word_with.A = 1;
             if (command_index == CLR || command_index == JMP)
@@ -384,32 +410,36 @@ void first_pass()
 
             word_with.destination_address_mode = get_address_mode(file_contents, register_index);
 
-            if (word_with.destination_address_mode == 0 || word_with.source_address_mode == 0)
+            if (word_with.destination_address_mode != 0 || word_with.source_address_mode != 0)
             {
-                add_to_data_list(data_list, IC, 1, p_word_with, p_word_without);
-                IC++;
+                
             }
-            reset_words(p_word_with, p_word_without);
-            L++;
+            add_to_data_list(data_list, IC, 1, word_with, word_without);
+            printf("added to %d\n", IC);
+            IC++;
+            printf("IC is now %d\n", IC);
+            reset_words(&word_with, &word_without);
         }
 
         /* third group, no operands */
         else if (command_index == RTS || command_index == STOP)
         {
-            printf("in third group check\n");
+            printf("in third group\n");
             word_without.A = 1;
 
             if (command_index == RTS)
-                word_without.opcode = pow(2, 15);
+                word_without.opcode = pow(2, 14);
             else
-                word_without.opcode = pow(2, 16);
+                word_without.opcode = pow(2, 15);
 
-            add_to_data_list(data_list, IC, 0, p_word_with, p_word_without);
-            reset_words(p_word_with, p_word_without);
-            L++;
+            add_to_data_list(data_list, IC, 0, word_with, word_without);
+            printf("added to %d\n", IC);
+            reset_words(&word_with, &word_without);
             IC++;
+            printf("IC is now %d\n", IC);
         }
         IC += L; /* STEP 16 */
+        printf("IC is now %d\n", IC);
         global_L += L;
         L = 0;
         continue; /* back to step 2 */
@@ -427,11 +457,13 @@ void first_pass()
     DCF = DC;
 
     /* STEP 19 , update symbols with data */
-    update_data_symbols(symbol_list, global_L);
-    printf("updated symbol list\n");
+    printf("global L is %d\n", global_L);
+    /*update_data_symbols(symbol_list, global_L);*/
+    printf("step 19 over\n");
 
     /* STEP 20 , begin second pass */
-    second_pass();
+    rewind(post_macro_f);
+    second_pass(symbol_list, data_list);
 }
 
 int get_address_mode(char * string, int index)

@@ -43,6 +43,41 @@ symbol_node * add_to_symbol_list(symbol_linked_list * list, char * new_symbol, i
     return (list->head);
 }
 
+print_symbol_list(symbol_linked_list * list)
+{
+    symbol_node * temp;
+    temp = list->head;
+
+    while(temp != NULL)
+    {
+        printf("symbol name is %s\n", temp->symbol);
+        printf("decimal value is %d\n", temp->decimal_value);
+        printf("base adress is %d\n", temp->base_address);
+        printf("offset is %d\n", temp->offset);
+        printf("external %d code %d entry %d data %d\n", temp->symbol_attributes.external, temp->symbol_attributes.code, temp->symbol_attributes.entry, temp->symbol_attributes.data);
+    
+        temp = temp->next;
+    }
+}
+
+int find_symbol_and_change_entry(symbol_linked_list * list, char * symbol_name)
+{
+    symbol_node * temp;
+
+    temp = list->head;
+
+    while (temp != NULL)
+    {
+        if (!strcmp(symbol_name, temp->symbol))
+        {
+            temp->symbol_attributes.entry = 1;
+            return 1;
+        }
+        temp = temp->next;
+    }
+    return 0;
+}
+
 int get_number_of_symbol_nodes(symbol_linked_list * list)
 {
     symbol_node * temp;

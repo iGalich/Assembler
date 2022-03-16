@@ -22,6 +22,10 @@ symbol_node * add_to_symbol_list(symbol_linked_list * list, char * new_symbol, i
 
 symbol_linked_list * create_empty_symbol_list();
 
+void print_symbol_list(symbol_linked_list * list);
+
 int get_number_of_symbol_nodes(symbol_linked_list * list);
 
 void update_data_symbols(symbol_linked_list * list, int L);
+
+int find_symbol_and_change_entry(symbol_linked_list * list, char * symbol_name);
