@@ -9,14 +9,17 @@ address_linked_list * create_empty_address_list()
     return new_head;
 }
 
-address_node * add_to_address_list(address_linked_list * list, int new_address)
+address_node * add_to_address_list(address_linked_list * list, int new_address, int new_next_adress, char * string)
 {
     address_node * new_node;
     address_node * temp;
 
     new_node = (address_node *)malloc(sizeof(address_node));
     
+    new_node->string = (char*)malloc(81 * sizeof(char));
+    strcpy(new_node->string, string);
     new_node->address = new_address;
+    new_node->next_address = new_next_adress;
     new_node->next = NULL;
 
     if (list->head == NULL)
@@ -43,6 +46,8 @@ void print_address_list(address_linked_list * list)
     while (temp != NULL)
     {
         printf("missing address is %d\n", temp->address);
+        printf("missing address is %d\n", temp->next_address);
+        printf("name is %s\n", temp->string);
         temp = temp->next;
     }
 }

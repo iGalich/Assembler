@@ -36,6 +36,5 @@ void build_final_files(data_linked_list * data_list)
 
     print_all_address(data_list);
 
-    printf("ICF is %d\n", ICF);
-    printf("DCF is %d\n", DCF);
+    
 }

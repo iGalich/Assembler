@@ -72,6 +72,12 @@ void print_all_address(data_linked_list * list);
 
 void swap_data_nodes(data_node * a, data_node * b);
 
+void reset_word_without(struct word_without_operands * word);
+
+int count_number_of_words_in_file(FILE * file);
+
+void convert_address_to_data(address_linked_list * address_list, data_linked_list * data_list, symbol_linked_list * symbol_list);
+
 data_node * add_to_data_list(data_linked_list * list, int adress, int flag, word_with_operands, word_without_operands);
 /*
  * This function looks in the folder for the file with the filename with the file extension .as

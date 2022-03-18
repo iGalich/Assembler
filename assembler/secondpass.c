@@ -3,6 +3,8 @@
 extern FILE * post_macro_f;
 extern const char * command_names[16];
 
+int error_found_flag = 0;
+
 void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list, address_linked_list * address_list)
 {
     struct stat sb;
@@ -10,13 +12,15 @@ void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list,
     char * file_contents;
     char * previous_word;
 
+    const char * macro_start_keyword = "macro";
+    const char * macro_end_keyword = "endm";
     const char * keywords[5] = {".data",
                                 ".string",
                                 ".extern",
                                 ".entry",
                                 ":"};
 
-    int error_found_flag = 0;
+    
     int looking_for_symbol_flag = 0;
     int i, j;
 
@@ -37,9 +41,11 @@ void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list,
 
     temp = address_list->head;
 
+    strcpy(previous_word, "");
+
     /* TEST */
 
-    /*printf("------\n");
+    printf("------\n");
     printf("priting data list\n");
     print_data_list(data_list);
     printf("printing symbol list\n");
@@ -47,17 +53,39 @@ void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list,
     printf("printing address list\n");
     print_address_list(address_list);
 
-    exit(0);*/
-    /* END OF TEST */ 
+    exit(0);
+    /* END OF TEST */
 
+    printf("-----------\n-----------\n");
     /* STEP 1 go over lines, if eof goto step 7 */
     while(fscanf(post_macro_f, " %[^\n ]", file_contents) != EOF)
     {
+        if (!strcmp(file_contents, macro_start_keyword))
+        {
+            while (strcmp(file_contents, macro_end_keyword))
+            {
+                fscanf(post_macro_f, " %[^\n ]", file_contents);
+                printf("new word is %s\n", file_contents);
+            }
+            continue; /* going for next word after finding end of macro definition */
+        }
+
+        if (file_contents[0] == ',')
+            file_contents = chop_first_n_characters(file_contents, 1);
+        if (file_contents[strlen(file_contents) - 1] == ',')
+            file_contents[strlen(file_contents) - 1] = '\0';
+        printf("here1 with %s\n", file_contents);
 
         /* STEP 4, check if entry, else go to step 6 */
-        if (!strcmp(file_contents, keywords[3]))
+        if (!strcmp(file_contents, keywords[3])) /* checking for .entry */
         {
             fscanf(post_macro_f, " %[^\n ]", file_contents);
+            if (file_contents[0] == ',')
+                file_contents = chop_first_n_characters(file_contents, 1);
+            if (file_contents[strlen(file_contents) - 1] == ',')
+                file_contents[strlen(file_contents) - 1] = '\0';
+
+            printf("found entry keyword, new word is %s\n", file_contents);
             /* STEP 5 add entry attribute */
             if (!find_symbol_and_change_entry(symbol_list ,file_contents))
             {
@@ -65,51 +93,43 @@ void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list,
                 error_found_flag = 1;
             }
         }
-
-        for (i = 0; i < 16; i++)
-        {
-            if (!strcmp(file_contents, command_names[i]) && strstr(previous_word, keywords[4]) == NULL)
-            {
-                looking_for_symbol_flag = 1;
-                while (looking_for_symbol_flag && fscanf(post_macro_f, " %[^\n ]", file_contents) != EOF)
-                {
-                    for (j = 0; j < 5; j++)
-                    {
-                        if (strstr(file_contents, keywords[j]))
-                        {
-                            looking_for_symbol_flag = 0;
-                            goto escape;
-                        }
-
-                    }
-                    if ((symbol = find_symbol_with_name(symbol_list, file_contents)) != NULL)
-                    {
-                        /* adding base adress */
-                        word_without.R = 1;
-                        word_without.opcode = symbol->base_address;
-                        add_to_data_list(data_list, temp->address, 0, word_with, word_without);
-                        /* adding offset */
-                        word_without.opcode = symbol->offset;
-                        temp = temp->next;
-                        add_to_data_list(data_list, temp->address, 0, word_with, word_without);
-                        reset_words(&word_with, &word_without);
-                        if (temp->next != NULL)
-                            temp = temp->next;
-                    }
-                }
-            }
-        }
-        escape:
-        strlcpy(previous_word, file_contents, strlen(previous_word));
     }
-    
+    printf("going to convert\n");
+    convert_address_to_data(address_list, data_list, symbol_list);
+
     /* STEP 7 */
     if (error_found_flag)
     {
         fprintf(stderr, "errors were found during second pass, stopping program\n");
         exit(0);
     }
-
+    printf("going to sort\n");
     bubble_sort_data_list(data_list->head);
+    printf("finished sorting\n");
     build_final_files(data_list);
+}
+
+void convert_address_to_data(address_linked_list * address_list, data_linked_list * data_list, symbol_linked_list * symbol_list)
+{
+    address_node * temp_address_node;
+    symbol_node * temp_symbol_node;
+
+    temp_address_node = address_list->head;
+
+    if (temp_address_node == NULL)
+        return;
+    
+    while (temp_address_node != NULL)
+    {
+        if ((temp_symbol_node = find_symbol_with_name(symbol_list, temp_address_node->string)) != NULL)
+        {
+            /*add_to_data_list(data_list, temp_symbol_node->base_address)*/
+        }
+        else
+        {
+            error_found_flag = 1;
+            fprintf(stderr, "didn't find symbol in list with the name %s\n", temp_address_node->string);
+        }
+        temp_address_node = temp_address_node->next;
+    }
 }

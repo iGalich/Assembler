@@ -1,5 +1,7 @@
 typedef struct address_node {
     int address;
+    int next_address;
+    char * string;
     struct address_node * next;
 } address_node;
 
@@ -9,6 +11,6 @@ typedef struct {
 
 address_linked_list * create_empty_address_list();
 
-address_node * add_to_address_list(address_linked_list * list, int new_address);
+address_node * add_to_address_list(address_linked_list * list, int new_address, int next_address, char * string);
 
 void print_address_list(address_linked_list * list);

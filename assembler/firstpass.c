@@ -57,7 +57,7 @@ void first_pass()
 
     char * file_contents;
     char * previous_word;
-    char * line;
+    char * symbol_word;
 
     char ch;
 
@@ -69,18 +69,22 @@ void first_pass()
     const char * macro_end_keyword = "endm";
     
 
+    int symbol_first_flag = 0;
     int num_of_words = 0;
     int label_found_flag = 0;
-    int j, i = 0;
+    int j, i, k;
     int temp_data_holder = 0;
     int command_index = 0;
     int error_found_flag = 0;
     int register_index = 0;
     int global_L = 0;
+    int word_count = 0;
 
 
     word_with_operands word_with;
     word_without_operands word_without;
+
+    word_with_operands * temp_word;
 
     struct attributes label_attributes;
 
@@ -92,8 +96,6 @@ void first_pass()
     symbol_list = create_empty_symbol_list();
     data_list = create_empty_data_list();
     address_list = create_empty_address_list();
-
-    line = (char *)malloc(MAX_LENGTH * sizeof(char));
 
     reset_attributes(&label_attributes);
 
@@ -118,14 +120,22 @@ void first_pass()
         exit(0);
     }   
 
-    file_contents = malloc(sb.st_size);
     previous_word = malloc(sb.st_size);
+    file_contents = malloc(sb.st_size);
+    symbol_word = malloc(sb.st_size);
 
     external_flag = entry_flag = 0;
 
+    word_count = count_number_of_words_in_file(post_macro_f);
+
+    printf("word count is %d\n", word_count);
+    
     /* STEP 2 get line, if not goto step 17 */
-    while(fscanf(post_macro_f, " %[^\n ]", file_contents) != EOF)
+    /*while(fscanf(post_macro_f, " %[^\n ]", file_contents) != EOF)*/
+    for(k = 0; k < word_count; k++)
     {
+        fscanf(post_macro_f, " %[^\n ]", file_contents);
+        printf("iteration %d\n", k);
         step_02:
         printf("step 2 curr word is %s\n", file_contents);
         /* skip over macro definition */
@@ -134,6 +144,10 @@ void first_pass()
             while (strcmp(file_contents, macro_end_keyword))
             {
                 fscanf(post_macro_f, " %[^\n ]", file_contents);
+                k++;
+                if (k >= word_count)
+                    goto escape;
+                printf("iteration %d\n", k);
                 printf("new word is %s\n", file_contents);
             }
             continue; /* going for next word after finding end of macro definition */
@@ -151,6 +165,10 @@ void first_pass()
             strlcpy(previous_word, file_contents, strlen(file_contents) + 1);
 
             fscanf(post_macro_f, " %[^\n ]", file_contents);
+            k++;
+            if (k >= word_count)
+                    goto escape;
+            printf("iteration %d\n", k);
             printf("new word is %s\n", file_contents);
         }
 
@@ -167,6 +185,7 @@ void first_pass()
                 add_to_symbol_list(symbol_list, previous_word, IC, calculate_base_adress(IC), IC - calculate_base_adress(IC), label_attributes);
                 printf("added %s to symbol list in %d\n", previous_word ,IC);
                 reset_attributes(&label_attributes);
+                label_found_flag = 0;
             }
             /* STEP 7 check which data type to store, store and then increase DC; return to step 2 */
             if (strstr(file_contents, data_keyword) != NULL)
@@ -174,6 +193,10 @@ void first_pass()
                 printf("in step 7 of data\n");
                 step_07_data:
                 fscanf(post_macro_f, " %[^\n ]", file_contents);
+                k++;
+                if (k >= word_count)
+                    goto escape;
+                printf("iteration %d\n", k);
                 printf("here new word is %s\n", file_contents);
 
                 /* check if it is not a number, if true it means we got to the next line */
@@ -206,6 +229,10 @@ void first_pass()
                 step_07_string:
 
                 fscanf(post_macro_f, " %[^\n ]", file_contents);
+                k++;
+                if (k >= word_count)
+                    goto escape;
+                printf("iteration %d\n", k);
 
                 /* check if it is a string, otherwise we got to the next line */
                 if (file_contents[0] != '"')
@@ -240,6 +267,17 @@ void first_pass()
         continue; /* go back to step 2 */
         }
         
+        if (label_found_flag)
+        {
+            printf("step 11\n");
+
+            label_attributes.code = 1;
+            add_to_symbol_list(symbol_list, previous_word, IC, calculate_base_adress(IC), IC - calculate_base_adress(IC), label_attributes);
+            printf("added %s to symbol list in %d\n", previous_word, IC);
+            reset_attributes(&label_attributes);
+            label_found_flag = 0;
+        }
+        
         /* STEP 8 check if extern or entry, else goto step 11 */
         else if (strstr(file_contents, extern_keyword))
         {
@@ -247,6 +285,10 @@ void first_pass()
             external_flag = 1;
             /* STEP 10 add symbol to symbol list with extern attribute */
             fscanf(post_macro_f, " %[^\n ]", file_contents);
+            k++;
+            if (k >= word_count)
+                    goto escape;
+            printf("iteration %d\n", k);
             printf("new word is %s\n", file_contents);
 
             /* TODO check if label is already in symbol list, print error if needed, this is an error check of step 10 */
@@ -262,16 +304,24 @@ void first_pass()
         {
             entry_flag = 1;
             fscanf(post_macro_f, " %[^\n ]", file_contents);
+            k++;
+            if (k >= word_count)
+                    goto escape;
+            printf("iteration %d\n", k);
             printf("skipping over word %s\n", file_contents);
             continue;
         }
         /* STEP 11 check for label, add if true */
         else if (strstr(file_contents, ":"))
         {
-            printf("step 11\n");
+            printf("step 11 in algorithm\n");
             strlcpy(previous_word, file_contents, strlen(file_contents) + 1);
 
             fscanf(post_macro_f, " %[^\n ]", file_contents);
+            k++;
+            if (k >= word_count)
+                    goto escape;
+            printf("iteration %d\n", k);
             printf("step 11\n");
 
             previous_word[strlen(previous_word) - 1] = '\0'; /* remove colon */
@@ -323,6 +373,10 @@ void first_pass()
             printf("IC is now %d\n", IC);
             /* check the source operand */
             fscanf(post_macro_f, " %[^\n ]", file_contents);
+            k++;
+            if (k >= word_count)
+                    goto escape;
+            printf("iteration %d\n", k);
             printf("new word is %s\n", file_contents);
 
             word_with.A = 1;
@@ -339,9 +393,35 @@ void first_pass()
                 word_with.source_register = register_index;
             /* TODO add address mode error checks */
             word_with.source_address_mode = get_address_mode(file_contents, register_index);
+            if (L == 2 && (word_with.source_address_mode == 1 || word_with.source_address_mode == 2))
+            {
+                if (word_with.source_address_mode == 2)
+                {
+                    file_contents[strcspn(file_contents, "[")] = '\0';
+                }
+
+                strcpy(symbol_word, file_contents);
+                printf("symbol word is now %s\n", symbol_word);
+                symbol_first_flag = 1;
+            }
+            printf("after checking %s the mode is %d\n", file_contents, word_with.source_address_mode);
+            if (word_with.source_address_mode == 0)
+            {
+                word_without.A = 1;
+                file_contents = chop_first_n_characters(file_contents, 1); /* removes hashtag */
+                word_without.opcode = atoi(file_contents);
+                add_to_data_list(data_list, IC, 0, word_with, word_without);
+                printf("added %d to data list in %d\n", atoi(file_contents), IC);
+                IC++;
+                reset_word_without(&word_without);
+            }
 
             /* check the destination operand */
             fscanf(post_macro_f, " %[^\n ]", file_contents);
+            k++;
+            if (k >= word_count)
+                    goto escape;
+            printf("iteration %d\n", k);
             printf("new word is %s\n", file_contents);
 
             register_index = get_register_index(file_contents);
@@ -352,16 +432,34 @@ void first_pass()
                 word_with.destination_register = register_index;
 
             word_with.destination_address_mode = get_address_mode(file_contents, register_index);
-
-            if (word_with.destination_address_mode != 0 || word_with.source_address_mode != 0)
+            if (L == 2 && (word_with.destination_address_mode == 1 || word_with.destination_address_mode == 2))
             {
-                
+                if (word_with.destination_address_mode == 2)
+                {
+                    file_contents[strcspn(file_contents, "[")] = '\0';
+                }
+
+                strcpy(symbol_word, file_contents);
+                printf("symbol word is now %s\n", symbol_word);
             }
+
             add_to_data_list(data_list, IC, 1, word_with, word_without);
             printf("added to data list in %d\n", IC);
             IC++;
             printf("IC is now %d\n", IC);
-            reset_words(&word_with, &word_without);
+            
+            if (word_with.destination_address_mode == 0 && !symbol_first_flag)
+            {
+                word_without.A = 1;
+                file_contents = chop_first_n_characters(file_contents, 1); /* removes hashtag */
+                word_without.opcode = atoi(file_contents);
+                add_to_data_list(data_list, IC, 0, word_with, word_without);
+                printf("added %d to data list in %d\n", atoi(file_contents), IC);
+                IC++;
+                reset_word_without(&word_without);
+            }
+            if (!symbol_first_flag)
+                reset_words(&word_with, &word_without);
         }
         /* second group, commands with a single operands */
         else if (command_index >= CLR && command_index <= PRN)
@@ -400,6 +498,10 @@ void first_pass()
 
             /* check single operand */
             fscanf(post_macro_f, " %[^\n ]", file_contents);
+            k++;
+            if (k >= word_count)
+                    goto escape;
+            printf("iteration %d\n", k);
             printf("new word is %s\n", file_contents);
 
             word_with.A = 1;
@@ -416,6 +518,7 @@ void first_pass()
             word_with.source_address_mode = 0;
 
             register_index = get_register_index(file_contents);
+            printf("from %s got register index of %d\n", file_contents, register_index);
 
             if (register_index == -1)
                 word_with.destination_register = 0;
@@ -423,15 +526,36 @@ void first_pass()
                 word_with.destination_register = register_index;
 
             word_with.destination_address_mode = get_address_mode(file_contents, register_index);
-
-            if (word_with.destination_address_mode != 0 || word_with.source_address_mode != 0)
+            printf("destination address mode is %d\n", word_with.destination_address_mode);
+            if (L == 2 && (word_with.destination_address_mode == 1 || word_with.destination_address_mode == 2))
             {
-                
+                if (word_with.destination_address_mode == 2)
+                {
+                    file_contents[strcspn(file_contents, "[")] = '\0';
+                }
+
+                strcpy(symbol_word, file_contents);
+                printf("symbol word is now %s\n", symbol_word);
             }
+
             add_to_data_list(data_list, IC, 1, word_with, word_without);
             printf("added to data list in %d\n", IC);
             IC++;
             printf("IC is now %d\n", IC);
+            reset_word_without(&word_without);
+            if (word_with.destination_address_mode == 0)
+            {
+                temp_word = &word_with;
+                printf("des mode is %d and src mode is %d\n", temp_word->destination_address_mode, temp_word->source_address_mode);
+                word_without.A = 1;
+                file_contents = chop_first_n_characters(file_contents, 1);
+                word_without.opcode = atoi(file_contents);
+                add_to_data_list(data_list, IC, 0, word_with, word_without);
+                printf("added %d to data list in %d\n", atoi(file_contents) ,IC);
+                IC++;
+                printf("IC is now %d\n", IC);
+                reset_words(&word_with, &word_without);
+            }
             reset_words(&word_with, &word_without);
         }
 
@@ -456,17 +580,31 @@ void first_pass()
         printf("after adding L, IC is now %d\n", IC);
         if (L == 2)
         {
-            add_to_address_list(address_list, IC - L);
-            printf("missing %d\n", IC - L);
-            add_to_address_list(address_list, IC - L + 1);
-            printf("missing %d\n", IC - L + 1);
+            printf("INHERE1\n");
+            add_to_address_list(address_list, IC - L, IC - L + 1, symbol_word);
+            printf("missing %d and %d with label %s\n", IC - L, IC - L + 1, symbol_word);
         }
+        if (symbol_first_flag && word_with.destination_address_mode == 0)
+        {
+            printf("INHERE2\n");
+            word_without.A = 1;
+            file_contents = chop_first_n_characters(file_contents, 1); /* removes hashtag */
+            word_without.opcode = atoi(file_contents);
+            add_to_data_list(data_list, IC, 0, word_with, word_without);
+            printf("added %d to data list in %d\n", atoi(file_contents), IC);
+            IC++;
+            reset_word_without(&word_without);
+
+
+            reset_words(&word_with, &word_without);
+        }
+        symbol_first_flag = 0;
         global_L += L;
         printf("global L is now %d\n", global_L);
         L = 0;
         continue; /* back to step 2 */
     }
-
+    escape:
     /* STEP 17, after reading entire file, stop if errors were found */
     if (error_found_flag)
     {
@@ -479,11 +617,34 @@ void first_pass()
     DCF = DC;
 
     /* STEP 19 , update symbols with data */
+    printf("UPDATING LIST WITH %d\n", global_L);
     update_data_symbols(symbol_list, global_L);
 
     /* STEP 20 , begin second pass */
     rewind(post_macro_f);
     second_pass(symbol_list, data_list, address_list);
+}
+
+int count_number_of_words_in_file(FILE * file)
+{
+    int count = 0;
+    char ch, prev_c = 'a';
+
+    while ((ch = getc(file)) != EOF)
+    {
+        if (isspace(ch) && isspace(prev_c))
+        {
+            prev_c = ch;
+            continue;
+        }
+        if (isspace(ch))
+        {
+            count++;
+        }
+        prev_c = ch;
+    }
+    rewind(file);
+    return count;
 }
 
 int get_address_mode(char * string, int index)
@@ -493,19 +654,24 @@ int get_address_mode(char * string, int index)
     if (string[strlen(string) - 1] == ',')
         string[strlen(string) - 1] = '\0';
 
+    printf("checking for mode in %s\n", string);
+    printf("index is %d\n", index);
+
     if (string[0] == '#')
         return 0;
     if (strstr(string, "["))
     {
         L += 2;
+        printf("L INCREASED 1 \n");
         return 2;
     }
-    if (!strcmp(string, register_names[index]))
+    if (index >= 0 && !strcmp(string, register_names[index]))
         return 3;
     /* direct address, using a label */
     else
     {
         L += 2;
+        printf("L INCREASED 2 \n");
         return 1;
     }
 }
@@ -514,9 +680,14 @@ int get_register_index(char * string)
 {
     int i;
 
+    if (string[0] == ',')
+        string = chop_first_n_characters(string, 1);
+    if (string[strlen(string) - 1] == ',')
+        string[strlen(string) - 1] = '\0';
+
     for (i = 0; i < 16; i++)
     {
-        if (strstr(string, register_names[i]) != NULL)
+        if (!strcmp(string, register_names[i]))
             return i;
     }
     return -1;
@@ -535,6 +706,14 @@ int get_command_index(char * command)
     return -1;
 }
 
+void reset_word_without(struct word_without_operands * word)
+{
+    word->A = 0;
+    word->E = 0;
+    word->msb = 0;
+    word->opcode = 0;
+    word->R = 0;
+}
 
 void reset_words(struct word_with_operands * word_with, struct word_without_operands * word_without)
 {
