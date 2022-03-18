@@ -10,6 +10,22 @@ data_linked_list * create_empty_data_list()
     return new_head;
 }
 
+void print_all_address(data_linked_list * list)
+{
+    data_node * temp;
+    int prev_add = 99;
+    temp = list->head;
+
+    while (temp != NULL)
+    {
+        printf("address is %d\n", temp->address);
+        prev_add = temp->address;
+        temp = temp->next;
+        if (temp != NULL && prev_add + 1 != temp->address)
+            printf("STANGE JUMP\n");
+    }
+}
+
 void print_data_list(data_linked_list * list)
 {
     data_node * temp;
@@ -34,6 +50,43 @@ void print_data_list(data_linked_list * list)
         }
         temp = temp->next;
     }
+}
+
+void bubble_sort_data_list(data_node * start)
+{
+    int swapped, i;
+    data_node * pointer1;
+    data_node * left_pointer = NULL;
+  
+    /* Checking for empty list */
+    if (start == NULL)
+        return;
+  
+    do
+    {
+        swapped = 0;
+        pointer1 = start;
+  
+        while (pointer1->next != left_pointer)
+        {
+            if (pointer1->address > pointer1->next->address)
+            { 
+                swap_data_nodes(pointer1, pointer1->next);
+                swapped = 1;
+            }
+            pointer1 = pointer1->next;
+        }
+        left_pointer = pointer1;
+    }
+    while (swapped);
+    
+}
+
+void swap_data_nodes(data_node * a, data_node * b)
+{
+    int temp = a->address;
+    a->address = b->address;
+    b->address = temp;
 }
 
 data_node * add_to_data_list(data_linked_list * list, int new_base_adress, int new_operands_flag, struct word_with_operands new_word_with, struct word_without_operands new_word_without)

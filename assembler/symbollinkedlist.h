@@ -29,3 +29,5 @@ int get_number_of_symbol_nodes(symbol_linked_list * list);
 void update_data_symbols(symbol_linked_list * list, int L);
 
 int find_symbol_and_change_entry(symbol_linked_list * list, char * symbol_name);
+
+symbol_node * find_symbol_with_name(symbol_linked_list * list, char * symbol_name);

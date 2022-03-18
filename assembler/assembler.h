@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #include "linkedlist.h"
 #include "symbollinkedlist.h"
-#include "datalinkedlist.h"
+#include "addresslinkedlist.h"
 
 typedef struct word_without_operands {
     unsigned int opcode : 16;
@@ -66,6 +66,11 @@ typedef struct {
 data_linked_list * create_empty_data_list();
 
 void print_data_list(data_linked_list * list);
+
+void bubble_sort_data_list(data_node * start);
+void print_all_address(data_linked_list * list);
+
+void swap_data_nodes(data_node * a, data_node * b);
 
 data_node * add_to_data_list(data_linked_list * list, int adress, int flag, word_with_operands, word_without_operands);
 /*
@@ -140,6 +145,8 @@ int get_register_index(char * string);
 
 int get_address_mode(char * string, int index);
 
-void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list);
+void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list, address_linked_list * address_list);
 
 void reset_words(struct word_with_operands * word_with, struct word_without_operands * word_without);
+
+void build_final_files(data_linked_list * data_list);

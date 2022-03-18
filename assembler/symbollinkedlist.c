@@ -43,7 +43,7 @@ symbol_node * add_to_symbol_list(symbol_linked_list * list, char * new_symbol, i
     return (list->head);
 }
 
-print_symbol_list(symbol_linked_list * list)
+void print_symbol_list(symbol_linked_list * list)
 {
     symbol_node * temp;
     temp = list->head;
@@ -76,6 +76,21 @@ int find_symbol_and_change_entry(symbol_linked_list * list, char * symbol_name)
         temp = temp->next;
     }
     return 0;
+}
+
+symbol_node * find_symbol_with_name(symbol_linked_list * list, char * symbol_name)
+{
+    symbol_node * temp;
+    temp = list->head;
+
+    while (temp != NULL)
+    {
+        if (!strcmp(temp->symbol, symbol_name))
+            return temp;
+        temp = temp->next;
+    }
+    printf("symbol with name %s wasn't found\n", symbol_name);
+    return NULL;
 }
 
 int get_number_of_symbol_nodes(symbol_linked_list * list)
