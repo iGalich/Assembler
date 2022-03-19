@@ -7,6 +7,8 @@
 #include "symbollinkedlist.h"
 #include "addresslinkedlist.h"
 
+#define MAX_LENGTH 81 /* max amount of characters in a single line in the files, including '\n' character */
+
 typedef struct word_without_operands {
     unsigned int opcode : 16;
     unsigned int E : 1;
@@ -72,9 +74,17 @@ void print_all_address(data_linked_list * list);
 
 void swap_data_nodes(data_node * a, data_node * b);
 
+int power(int base, int power);
+
 void reset_word_without(struct word_without_operands * word);
 
+void create_object_file(data_linked_list * list);
+
 int count_number_of_words_in_file(FILE * file);
+
+void int_to_binary(unsigned int in, int count, int * out);
+
+int binary_to_decimal(int * arr);
 
 void convert_address_to_data(address_linked_list * address_list, data_linked_list * data_list, symbol_linked_list * symbol_list);
 
@@ -151,8 +161,12 @@ int get_register_index(char * string);
 
 int get_address_mode(char * string, int index);
 
+void create_entry_file(symbol_linked_list * list);
+
+void create_external_file(symbol_linked_list * symbol_list, address_linked_list * address_list);
+
 void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list, address_linked_list * address_list);
 
 void reset_words(struct word_with_operands * word_with, struct word_without_operands * word_without);
 
-void build_final_files(data_linked_list * data_list);
+void build_final_files(data_linked_list * data_list, symbol_linked_list * symbol_list, address_linked_list * address_list);

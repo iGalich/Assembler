@@ -45,7 +45,7 @@ void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list,
 
     /* TEST */
 
-    printf("------\n");
+    /*printf("------\n");
     printf("priting data list\n");
     print_data_list(data_list);
     printf("printing symbol list\n");
@@ -53,7 +53,7 @@ void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list,
     printf("printing address list\n");
     print_address_list(address_list);
 
-    exit(0);
+    exit(0); */
     /* END OF TEST */
 
     printf("-----------\n-----------\n");
@@ -106,7 +106,7 @@ void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list,
     printf("going to sort\n");
     bubble_sort_data_list(data_list->head);
     printf("finished sorting\n");
-    build_final_files(data_list);
+    build_final_files(data_list, symbol_list, address_list);
 }
 
 void convert_address_to_data(address_linked_list * address_list, data_linked_list * data_list, symbol_linked_list * symbol_list)
@@ -114,7 +114,12 @@ void convert_address_to_data(address_linked_list * address_list, data_linked_lis
     address_node * temp_address_node;
     symbol_node * temp_symbol_node;
 
+    word_with_operands word_with;
+    word_without_operands word_without;
+
     temp_address_node = address_list->head;
+
+    reset_words(&word_with, &word_without);
 
     if (temp_address_node == NULL)
         return;
@@ -123,7 +128,12 @@ void convert_address_to_data(address_linked_list * address_list, data_linked_lis
     {
         if ((temp_symbol_node = find_symbol_with_name(symbol_list, temp_address_node->string)) != NULL)
         {
-            /*add_to_data_list(data_list, temp_symbol_node->base_address)*/
+            word_without.R = 1;
+            word_without.opcode = temp_symbol_node->base_address;
+            add_to_data_list(data_list, temp_address_node->address, 0, word_with, word_without);
+            word_without.opcode = temp_symbol_node->offset;
+            add_to_data_list(data_list, temp_address_node->next_address, 0, word_with, word_without);
+            reset_words(&word_with, &word_without);
         }
         else
         {

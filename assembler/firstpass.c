@@ -618,7 +618,7 @@ void first_pass()
 
     /* STEP 19 , update symbols with data */
     printf("UPDATING LIST WITH %d\n", global_L);
-    update_data_symbols(symbol_list, global_L);
+    /*update_data_symbols(symbol_list, global_L);*/
 
     /* STEP 20 , begin second pass */
     rewind(post_macro_f);

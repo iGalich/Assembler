@@ -8,7 +8,7 @@ assembler: $(ASSEMBLER_OBJECTS)
 	gcc -g -ansi -Wall -ansi -pedantic $(ASSEMBLER_OBJECTS) -o assembler
 
 assembler.o: assembler.c $(HEADERS)
-	$(FLAGS) assembler.c -o assembler.o
+	$(FLAGS) assembler.c -o assembler.o -lm
 
 filefunc.o: filefunc.c $(HEADERS)
 	$(FLAGS) filefunc.c -o filefunc.o
@@ -26,7 +26,7 @@ datalinkedlist.o: datalinkedlist.c $(HEADERS)
 	$(FLAGS) datalinkedlist.c -o datalinkedlist.o
 
 firstpass.o: firstpass.c $(HEADERS)
-	$(FLAGS) firstpass.c -o firstpass.o -lb
+	$(FLAGS) firstpass.c -o firstpass.o -lm
 
 stringfunc.o: stringfunc.c $(HEADERS)
 	$(FLAGS) stringfunc.c -o stringfunc.o

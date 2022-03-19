@@ -109,6 +109,7 @@ int get_number_of_symbol_nodes(symbol_linked_list * list)
     return count;
 }
 
+/* TODO remove this */
 void update_data_symbols(symbol_linked_list * list, int L)
 {
     symbol_node * temp;
@@ -120,8 +121,9 @@ void update_data_symbols(symbol_linked_list * list, int L)
         if (temp->symbol_attributes.data == 1)
         {
             temp->base_address += L;
-            temp->decimal_value = temp->base_address - calculate_base_adress(temp->base_address);
-            temp->offset = temp->base_address - temp->decimal_value;
+            temp->decimal_value += L;
+            /*temp->decimal_value = temp->base_address - calculate_base_adress(temp->base_address);*/
+            temp->offset = temp->decimal_value - temp->base_address; 
         }
         temp = temp->next;
     }

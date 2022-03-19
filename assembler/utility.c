@@ -37,6 +37,18 @@ char * chop_first_n_characters(char * str, size_t n)
     return str + n;
 }
 
+int power(int base, int power)
+{
+    int result = 1;
+    int i = 0;
+
+    for (i = 0; i < power; i++)
+    {
+        result *= base;
+    }
+    return result;
+}
+
 int count_words_in_lines(char * string)
 {
     int i, count = 0;
