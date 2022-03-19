@@ -1,6 +1,8 @@
 #include "assembler.h"
 
+extern FILE * original_f;
 extern FILE * post_macro_f;
+extern FILE * copy_f;
 extern const char * command_names[16];
 
 int error_found_flag = 0;
@@ -20,16 +22,6 @@ void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list,
                                 ".entry",
                                 ":"};
 
-    
-    int looking_for_symbol_flag = 0;
-    int i, j;
-
-    address_node * temp;
-    symbol_node * symbol;
-
-    word_with_operands word_with;
-    word_without_operands  word_without;
-
     if (stat("copy.am", &sb) == -1)
     {
         perror("stat error\n");
@@ -39,24 +31,8 @@ void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list,
     file_contents = malloc(sb.st_size);
     previous_word = malloc(sb.st_size);
 
-    temp = address_list->head;
-
     strcpy(previous_word, "");
 
-    /* TEST */
-
-    /*printf("------\n");
-    printf("priting data list\n");
-    print_data_list(data_list);
-    printf("printing symbol list\n");
-    print_symbol_list(symbol_list);
-    printf("printing address list\n");
-    print_address_list(address_list);
-
-    exit(0); */
-    /* END OF TEST */
-
-    printf("-----------\n-----------\n");
     /* STEP 1 go over lines, if eof goto step 7 */
     while(fscanf(post_macro_f, " %[^\n ]", file_contents) != EOF)
     {
@@ -65,7 +41,6 @@ void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list,
             while (strcmp(file_contents, macro_end_keyword))
             {
                 fscanf(post_macro_f, " %[^\n ]", file_contents);
-                printf("new word is %s\n", file_contents);
             }
             continue; /* going for next word after finding end of macro definition */
         }
@@ -74,7 +49,6 @@ void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list,
             file_contents = chop_first_n_characters(file_contents, 1);
         if (file_contents[strlen(file_contents) - 1] == ',')
             file_contents[strlen(file_contents) - 1] = '\0';
-        printf("here1 with %s\n", file_contents);
 
         /* STEP 4, check if entry, else go to step 6 */
         if (!strcmp(file_contents, keywords[3])) /* checking for .entry */
@@ -85,16 +59,14 @@ void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list,
             if (file_contents[strlen(file_contents) - 1] == ',')
                 file_contents[strlen(file_contents) - 1] = '\0';
 
-            printf("found entry keyword, new word is %s\n", file_contents);
             /* STEP 5 add entry attribute */
             if (!find_symbol_and_change_entry(symbol_list ,file_contents))
             {
-                printf("error : symbol %s wasn't found\n", file_contents);
+                fprintf(stderr,"error : symbol %s wasn't found\n", file_contents);
                 error_found_flag = 1;
             }
         }
     }
-    printf("going to convert\n");
     convert_address_to_data(address_list, data_list, symbol_list);
 
     /* STEP 7 */
@@ -103,10 +75,13 @@ void second_pass(symbol_linked_list * symbol_list, data_linked_list * data_list,
         fprintf(stderr, "errors were found during second pass, stopping program\n");
         exit(0);
     }
-    printf("going to sort\n");
     bubble_sort_data_list(data_list->head);
-    printf("finished sorting\n");
     build_final_files(data_list, symbol_list, address_list);
+
+    fclose(post_macro_f);
+    fclose(original_f);
+    fclose(copy_f);
+    remove("copy.am");
 }
 
 void convert_address_to_data(address_linked_list * address_list, data_linked_list * data_list, symbol_linked_list * symbol_list)

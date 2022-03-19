@@ -1,5 +1,7 @@
 #include "assembler.h"
 
+#define LAST_ADRESS 8191 /* Final address of our RAM */
+
 extern int external_flag;
 extern int entry_flag;
 extern int ICF;
@@ -16,6 +18,12 @@ void build_final_files(data_linked_list * data_list, symbol_linked_list * symbol
         create_entry_file(symbol_list);
     
     create_object_file(data_list);
+
+    /* FINAL FREE */
+    free(global_filename);
+    free(address_list->head);
+    free(data_list->head);
+    free(symbol_list->head);
 }
 
 void create_external_file(symbol_linked_list * symbol_list, address_linked_list * address_list)
@@ -45,8 +53,6 @@ void create_external_file(symbol_linked_list * symbol_list, address_linked_list 
         }
         temp_address = temp_address->next;
     }
-
-    printf("finished creating external file\n");
 }
 
 void create_entry_file(symbol_linked_list * list)
@@ -63,8 +69,6 @@ void create_entry_file(symbol_linked_list * list)
     }
     global_filename[strlen(global_filename) - 4] = '\0';
 
-    printf("starting to create entry file\n");
-
     while (temp != NULL)
     {
         if (temp->symbol_attributes.entry == 1)
@@ -72,7 +76,6 @@ void create_entry_file(symbol_linked_list * list)
         
         temp = temp->next;
     }
-    printf("finished creating entry file\n");
 }
 
 void create_object_file(data_linked_list * list)
@@ -102,11 +105,9 @@ void create_object_file(data_linked_list * list)
 
     while (temp != NULL)
     {
-        printf("new temporary node\n");
         fprintf(object_file, "%04d ", starting_address++);
         if (temp->operands_flag == 0)
         {
-            printf("operands flag of without\n");
             binary_array[i++] = temp->word_without.msb;
             binary_array[i++] = temp->word_without.A;
             binary_array[i++] = temp->word_without.R;
@@ -115,7 +116,6 @@ void create_object_file(data_linked_list * list)
         }
         else /* if temp->operands_flag == 1 aka working on word with operands*/
         {
-            printf("operands flag of with\n");
             binary_array[i++] = temp->word_with.msb;
             binary_array[i++] = temp->word_with.A;
             binary_array[i++] = temp->word_with.R;
@@ -134,7 +134,6 @@ void create_object_file(data_linked_list * list)
 
         for (i = 0; i < 5; i++)
         {
-            printf("in the loop\n");
             decimal_array[i] = binary_to_decimal(binary_array + j);
             j += 4;
         }
@@ -155,7 +154,8 @@ void create_object_file(data_linked_list * list)
         group_letter = 'A';
         i = j = 0;
     }
-    printf("finished creating object file\n");
+    if (starting_address > LAST_ADRESS)
+        fprintf(stderr, "RAM memory exceeded\n");
 }
 
 int binary_to_decimal(int * arr)
@@ -163,7 +163,6 @@ int binary_to_decimal(int * arr)
     int decimal_value = 0;
     int i = 0;
 
-    printf("in binary to decimal convrsion\n");
     /* this function only converts 4 binary digits to their decimal value */
     while (i < 4)
     {
@@ -177,7 +176,6 @@ void int_to_binary(unsigned int in, int count, int * out)
 {
     unsigned int mask = 1U << (count - 1);
     int i;
-    printf("in int to binary converion\n");
     for (i = 0; i < count; i++) 
     {
         out[i] = (in & mask) ? 1 : 0;

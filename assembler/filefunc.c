@@ -1,8 +1,7 @@
 #include "assembler.h"
-#include "const.h"
 
 FILE *original_f; /* original .as file */
-FILE *post_macro_f; /* post macro file (1st pass) with the file extension .am */
+FILE *post_macro_f; /* post macro file with the file extension .am */
 FILE *copy_f;
 
 char * global_filename;
@@ -52,9 +51,7 @@ void create_copy(FILE * target, FILE * source)
     }
     
     while ((ch = fgetc(source)) != EOF){
-        printf("here1\n");
         fputc(ch, target);
-        printf("here2\n");
     }
 
     rewind(source);
@@ -183,4 +180,6 @@ void macro_pass(linked_list * list)
     }
     rewind(original_f);
     rewind(post_macro_f);
+    
+    free_macro_list(list->head);
 }

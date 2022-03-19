@@ -1,5 +1,4 @@
 #include "assembler.h"
-#include "const.h"
 
 symbol_linked_list * create_empty_symbol_list()
 {
@@ -8,6 +7,18 @@ symbol_linked_list * create_empty_symbol_list()
     new_head->head = NULL;
 
     return new_head;
+}
+
+void free_symbol_list(symbol_node * head)
+{
+    symbol_node * temp;
+
+    while (head != NULL)
+    {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
 }
 
 symbol_node * add_to_symbol_list(symbol_linked_list * list, char * new_symbol, int new_decimal_value, int new_base_adress, int new_offset, struct attributes new_attributes)
@@ -89,7 +100,6 @@ symbol_node * find_symbol_with_name(symbol_linked_list * list, char * symbol_nam
             return temp;
         temp = temp->next;
     }
-    printf("symbol with name %s wasn't found\n", symbol_name);
     return NULL;
 }
 
@@ -107,24 +117,4 @@ int get_number_of_symbol_nodes(symbol_linked_list * list)
     }
     
     return count;
-}
-
-/* TODO remove this */
-void update_data_symbols(symbol_linked_list * list, int L)
-{
-    symbol_node * temp;
-
-    temp = list->head;
-
-    while (temp != NULL)
-    {
-        if (temp->symbol_attributes.data == 1)
-        {
-            temp->base_address += L;
-            temp->decimal_value += L;
-            /*temp->decimal_value = temp->base_address - calculate_base_adress(temp->base_address);*/
-            temp->offset = temp->decimal_value - temp->base_address; 
-        }
-        temp = temp->next;
-    }
 }

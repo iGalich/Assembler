@@ -29,3 +29,9 @@ address_node * add_to_address_list(address_linked_list * list, int new_address, 
  * *list : the list to print
  */
 void print_address_list(address_linked_list * list);
+
+/*
+ * Free address list
+ * *head : head of list
+ */
+void free_address_list(address_node * head);

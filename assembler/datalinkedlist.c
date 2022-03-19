@@ -1,5 +1,6 @@
 #include "assembler.h"
-#include "const.h"
+
+/* This linked list is used to store the data of each word */
 
 data_linked_list * create_empty_data_list()
 {
@@ -8,6 +9,18 @@ data_linked_list * create_empty_data_list()
     new_head->head = NULL;
     
     return new_head;
+}
+
+void free_data_list(data_node * head)
+{
+    data_node * temp;
+
+    while (head != NULL)
+    {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
 }
 
 void print_all_address(data_linked_list * list)

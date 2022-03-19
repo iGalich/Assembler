@@ -9,6 +9,18 @@ address_linked_list * create_empty_address_list()
     return new_head;
 }
 
+void free_address_list(address_node * head)
+{
+    address_node * temp;
+
+    while (head != NULL)
+    {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
 address_node * add_to_address_list(address_linked_list * list, int new_address, int new_next_adress, char * string)
 {
     address_node * new_node;

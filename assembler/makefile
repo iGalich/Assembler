@@ -2,7 +2,7 @@ FLAGS = gcc -c -Wall -ansi -pedantic
 
 ASSEMBLER_OBJECTS = assembler.o filefunc.o utility.o linkedlist.o symbollinkedlist.o datalinkedlist.o firstpass.o stringfunc.o secondpass.o addresslinkedlist.o finalfiles.o
 
-HEADERS = assembler.h linkedlist.h const.h symbollinkedlist.h addresslinkedlist.h
+HEADERS = assembler.h linkedlist.h symbollinkedlist.h addresslinkedlist.h
 
 assembler: $(ASSEMBLER_OBJECTS)
 	gcc -g -ansi -Wall -ansi -pedantic $(ASSEMBLER_OBJECTS) -o assembler

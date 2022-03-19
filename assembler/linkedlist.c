@@ -9,6 +9,18 @@ linked_list * create_empty_list()
     return new_head;
 }
 
+void free_macro_list(node * head)
+{
+    node * temp;
+
+    while (head != NULL)
+    {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
 node * add_to_list(linked_list * list, char * new_name, char **new_text, int number_of_rows)
 {
     int i;
