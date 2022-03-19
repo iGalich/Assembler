@@ -67,7 +67,7 @@ void print_data_list(data_linked_list * list)
 
 void bubble_sort_data_list(data_node * start)
 {
-    int swapped, i;
+    int swapped;
     data_node * pointer1;
     data_node * left_pointer = NULL;
   

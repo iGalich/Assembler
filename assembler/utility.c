@@ -51,7 +51,7 @@ int power(int base, int power)
 
 int count_words_in_lines(char * string)
 {
-    int i, count = 0;
+    int count = 0;
     int in_word_flag = 0;
 
     string = skip_white_space_at_start(string);

@@ -69,9 +69,8 @@ void first_pass()
     
 
     int symbol_first_flag = 0;
-    int num_of_words = 0;
     int label_found_flag = 0;
-    int j, i, k, x;
+    int j, k, x;
     int temp_data_holder = 0;
     int command_index = 0;
     int error_found_flag = 0;
@@ -83,15 +82,11 @@ void first_pass()
     word_with_operands word_with;
     word_without_operands word_without;
 
-    word_with_operands * temp_word;
-
     struct attributes label_attributes;
 
     data_linked_list * data_list;
     symbol_linked_list * symbol_list;
     address_linked_list * address_list;
-    
-    symbol_node * temp_symbol;
 
     symbol_list = create_empty_symbol_list();
     data_list = create_empty_data_list();
@@ -501,7 +496,6 @@ void first_pass()
             reset_word_without(&word_without);
             if (word_with.destination_address_mode == 0)
             {
-                temp_word = &word_with;
                 word_without.A = 1;
                 file_contents = chop_first_n_characters(file_contents, 1);
                 word_without.opcode = atoi(file_contents);

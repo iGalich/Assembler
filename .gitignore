@@ -12,3 +12,7 @@ assembler/text1.ent
 assembler/text1.ext
 *.ob
 assembler/const.h
+*.zip
+*.png
+*.ext
+*.ent
